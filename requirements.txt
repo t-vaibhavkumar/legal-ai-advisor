@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+chromadb
+ollama
+pydantic
+langchain
+sentence-transformers
+torch

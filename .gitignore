@@ -1,0 +1,20 @@
+# Ignore dataset files except legal_sources.json
+dataset/chroma_db/
+dataset/*.txt
+dataset/legal_terms.json
+
+# Allow tracking of legal_sources.json
+!dataset/legal_sources.json
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+venv/
+.env/
+
+# Ignore logs and dependency files
+*.log
