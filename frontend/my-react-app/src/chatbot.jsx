@@ -1,34 +1,56 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./chatbot.css";
 
+const askQuestion = async (query) => {
+  try {
+    console.log("Sending request to API...");
+    const response = await fetch("http://127.0.0.1:8000/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query }),
+    });
+
+    console.log("Response received:", response);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("API Response:", data);
+    return data.response;
+  } catch (error) {
+    console.error("Error fetching response:", error);
+    return "Error fetching response";
+  }
+};
+
 const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const chatBoxRef = useRef(null);
-  const inputRef = useRef(null); // Reference to input field
+  const inputRef = useRef(null);
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
-    setLoading(true); // Disable input while waiting
+    setLoading(true);
     const userMessage = { text: input, sender: "user" };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
+    setInput("");
 
-    setInput(""); // Clear input field
+    // Fetch response from FastAPI
+    const botReplyText = await askQuestion(input);
+    const botReply = { text: botReplyText, sender: "bot" };
 
-    // Simulate bot response delay
-    setTimeout(() => {
-      const botReply = { text: "Hello! How can I assist you?", sender: "bot" };
-      setMessages((prevMessages) => [...prevMessages, botReply]);
-      setLoading(false); // Re-enable input
+    setMessages((prevMessages) => [...prevMessages, botReply]);
+    setLoading(false);
 
-      // Ensure the cursor stays in the input field
-      setTimeout(() => inputRef.current?.focus(), 10);
-    }, 1000);
+    // Keep input focused
+    setTimeout(() => inputRef.current?.focus(), 10);
   };
 
-  // Handle Enter key press
   const handleKeyDown = (event) => {
     if (event.key === "Enter" && !loading) {
       event.preventDefault();
@@ -36,7 +58,6 @@ const Chatbot = () => {
     }
   };
 
-  // Auto-scroll to the latest message
   useEffect(() => {
     chatBoxRef.current?.scrollTo({
       top: chatBoxRef.current.scrollHeight,
@@ -44,7 +65,6 @@ const Chatbot = () => {
     });
   }, [messages]);
 
-  // Keep focus on input when component renders
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
