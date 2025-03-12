@@ -1,9 +1,12 @@
-import ollama
+import requests
+import os
+import sys
+import json
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from dataset.vector_database import search_documents
 
-
 def ask_llm(query):
-    """Retrieves relevant legal texts and queries Ollama LLM"""
+    """Retrieves relevant legal texts and queries Llama 3.2 running on Ollama locally."""
     relevant_docs = search_documents(query)
     context = "\n".join(relevant_docs)
 
@@ -15,5 +18,20 @@ def ask_llm(query):
     Question: {query}
     Answer:
     """
-    response = ollama.chat(model="mistral", messages=[{"role": "user", "content": prompt}])
-    return response["message"]["content"]
+
+    url = "http://localhost:11434/api/generate"  # Ollama's local API endpoint
+
+    payload = {
+        "model": "llama3.2",  # Replace with your actual model name
+        "prompt": prompt,
+        "stream": False
+    }
+
+    headers = {"Content-Type": "application/json"}
+
+    response = requests.post(url, data=json.dumps(payload), headers=headers)
+
+    if response.status_code == 200:
+        return response.json().get("response", "No response received.")
+    else:
+        return f"Error: {response.status_code}, {response.text}"

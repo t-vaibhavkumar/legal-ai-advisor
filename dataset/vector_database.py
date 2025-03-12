@@ -1,4 +1,5 @@
 import os
+import torch
 from langchain_community.vectorstores import Chroma  # Updated import
 from langchain_huggingface import HuggingFaceEmbeddings  # Updated import
 from tqdm import tqdm  # Progress bar
@@ -7,8 +8,15 @@ from tqdm import tqdm  # Progress bar
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # Get project root
 CHROMA_DB_PATH = os.path.join(BASE_DIR, "dataset", "chroma_db")
 
-# Initialize embeddings
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")  # Specify model
+# Check if GPU is available
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"✅ Using device: {DEVICE}")
+
+# Initialize embeddings with GPU support
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2",  
+    model_kwargs={"device": DEVICE}  # Enable GPU usage
+)
 
 # Create ChromaDB in the correct location
 db = Chroma(persist_directory=CHROMA_DB_PATH, embedding_function=embeddings)
@@ -31,5 +39,11 @@ def store_documents():
     db.persist()
     print(f"✅ Legal database stored successfully at {CHROMA_DB_PATH}")
 
+def search_documents(query, k=3):
+    """Retrieve the top k most relevant legal documents for a given query."""
+    results = db.similarity_search(query, k=k)
+    return [doc.page_content for doc in results]
+
 if __name__ == "__main__":
     store_documents()  # Run this script to store data initially
+    

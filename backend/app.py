@@ -1,16 +1,27 @@
+import logging
 from fastapi import FastAPI
 from pydantic import BaseModel
-from chatbot import ask_llm
+from chatbot import ask_llm  # Ensure chatbot.py exists
 
-# Initialize FastAPI app
+# ✅ Configure Logging
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
 app = FastAPI()
 
-# Define request schema
+# ✅ Define request model
 class QueryRequest(BaseModel):
     query: str
 
 @app.post("/ask")
 async def ask_question(request: QueryRequest):
-    """Handles user queries and returns AI-generated legal responses."""
-    response = ask_llm(request.query)
-    return {"response": response}
+    query = request.query
+    logger.debug(f"Received query: {query}")
+
+    try:
+        response = ask_llm(query)
+        logger.debug(f"LLM Response: {response}")
+        return {"response": response}
+    except Exception as e:
+        logger.error(f"Error processing request: {str(e)}", exc_info=True)
+        return {"error": "Internal server error. Check logs for details."}
