@@ -16,13 +16,18 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt
-          pip install pytest  # Ensure pytest is installed
+          pip install -r requirements.txt || echo "requirements.txt missing or invalid"
+          pip install pytest Flask  # Ensure required packages
 
       - name: Start Backend Server
         run: |
-          python backend/app.py &  # Run Flask app in the background
-          sleep 5  # Give it time to start
+          python backend/app.py > backend.log 2>&1 &  # Run Flask app in background
+          sleep 10  # Give it time to start
+
+      - name: Check if Backend is Running
+        run: |
+          sleep 10
+          curl -I http://127.0.0.1:5000 || (echo "Backend did not start" && cat backend.log && exit 1)
 
       - name: Run Unit Tests
         run: |
