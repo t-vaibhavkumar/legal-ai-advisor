@@ -23,7 +23,7 @@ def ask_llm(query):
     Answer:
     """
 
-    url = "http://localhost:11434/api/generate"  
+    url="http://localhost:11434/api/generate"
 
     payload = {
         "model": "llama3.2",  

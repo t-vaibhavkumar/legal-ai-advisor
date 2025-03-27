@@ -1,0 +1,28 @@
+name: CI/CD Pipeline
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Unit Tests
+        run: |
+          pytest tests/test_backend.py 
+
+      - name: Run Pylint
+        run: |
+          pylint --rcfile=.pylintrc $(git ls-files '*.py')  # Lint all Python files using .pylintrc
+

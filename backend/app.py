@@ -33,15 +33,14 @@ async def ask_question():
         return jsonify(data)
     except Exception as e:
         logger.error(f"Error processing request: {str(e)}", exc_info=True)
-        return {"error": "Internal server error. Check logs for details."}
-    
+        return {"error": "Internal server error. Check logs for details."} 
 
 @app.route('/debug_search', methods=['POST'])
 def debug_search():
     data = request.get_json()
     query = data.get("query", "")
     
-    retrieved_knowledge = search_documents(query)  # Your function
+    retrieved_knowledge = search_documents(query)
     return jsonify({"retrieved": retrieved_knowledge})
 
 
