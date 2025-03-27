@@ -31,6 +31,13 @@ const Chatbot = () => {
   const chatBoxRef = useRef(null);
   const inputRef = useRef(null);
 
+  // const test = () => {
+  //   botReplyText = "<script>alert('Hacked!')</script>"
+  //   const botReply = { text: botReplyText, sender: "bot" };
+
+  //   setMessages((prevMessages) => [...prevMessages, botReply]);
+  // }
+
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
@@ -39,7 +46,6 @@ const Chatbot = () => {
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInput("");
 
-    // Fetch response from FastAPI
     const botReplyText = await askQuestion(input);
     const botReply = { text: botReplyText, sender: "bot" };
 
