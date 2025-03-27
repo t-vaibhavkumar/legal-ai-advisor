@@ -17,12 +17,13 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt || echo "requirements.txt missing or invalid"
-          pip install pytest Flask  # Ensure required packages
+          pip install pytest Flask
+          pip install pylint
 
       - name: Start Backend Server
         run: |
           python backend/app.py > backend.log 2>&1 &  # Run Flask app in background
-          sleep 10  # Wait for startup
+          sleep 10  
 
       - name: Check if Backend is Running
         run: |
