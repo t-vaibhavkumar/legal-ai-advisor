@@ -17,12 +17,17 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
+          pip install pytest  # Ensure pytest is installed
+
+      - name: Start Backend Server
+        run: |
+          python backend/app.py &  # Run Flask app in the background
+          sleep 5  # Give it time to start
 
       - name: Run Unit Tests
         run: |
-          pytest tests/test_backend.py 
+          pytest tests/  # Run all test files in tests/
 
       - name: Run Pylint
         run: |
-          pylint --rcfile=.pylintrc $(git ls-files '*.py')  # Lint all Python files using .pylintrc
-
+          pylint --rcfile=.pylintrc $(git ls-files '*.py')  # Lint all Python files
