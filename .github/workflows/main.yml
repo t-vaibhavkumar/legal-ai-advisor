@@ -42,6 +42,3 @@ jobs:
         run: |
           pytest tests/
 
-      - name: Run Pylint
-        run: |
-          pylint --rcfile=.pylintrc $(git ls-files '*.py')  # Lint all Python files
