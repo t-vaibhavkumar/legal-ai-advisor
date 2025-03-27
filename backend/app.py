@@ -13,14 +13,15 @@ logger = logging.getLogger(__name__)
 
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://172.16.239.65:5173"}})
 
 # Define request model
 # class QueryRequest(BaseModel):
 #     query: str
 
 @app.route('/ask', methods=['POST'])
-async def ask_question():
+def ask_question():
     data = request.get_json()
     logger.debug(f"Received query: {data}")
     query = data["query"]
@@ -46,4 +47,4 @@ def debug_search():
 
 if __name__ == '__main__':
     print("hello")
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

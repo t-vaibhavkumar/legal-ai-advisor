@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import "./chatbot.css";
 
 const askQuestion = async (query) => {
+  const backendUrl = "http://172.16.239.65:5000/ask"
   try {
     const temp = {
       "query" : query
     }
     console.log("Sending request to API...");
-    const response = await fetch("http://127.0.0.1:5000/ask", {
+    const response = await fetch(backendUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify( temp ),
