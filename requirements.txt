@@ -9,7 +9,6 @@ flask
 flask-cors
 requests
 bs4
-json
 tqdm
 langchain-community
 langchain-huggingface
