@@ -12,4 +12,5 @@ bs4
 tqdm
 langchain-community
 langchain-huggingface
+pytest
 
