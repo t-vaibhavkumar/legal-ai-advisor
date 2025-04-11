@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 # CORS(app)
-CORS(app, resources={r"/*": {"origins": "http://172.16.239.65:5173"}})
+CORS(app, origins=["http://localhost:5173"])
+
 
 # Define request model
 # class QueryRequest(BaseModel):

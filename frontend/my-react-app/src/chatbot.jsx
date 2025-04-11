@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./chatbot.css";
 
 const askQuestion = async (query) => {
-  const backendUrl = "http://172.16.239.65:5000/ask"
+  const backendUrl = "http://127.0.0.1:5000/ask"
   try {
     const temp = {
       "query" : query

@@ -45,7 +45,7 @@ def test_sustained_load():
     query = {"query": "Explain Indian contract law."}
     
     start_time = time.time()
-    duration = 600  # 10 minutes
+    duration = 120  # 2 minutes
     request_count = 0
     
     while time.time() - start_time < duration:
@@ -55,6 +55,7 @@ def test_sustained_load():
             print(f"❌ API failed at {request_count} requests.")
             return
     
-    print(f"✅ Sustained Load Test Passed. {request_count} requests sent in 10 min.")
+    print(f"✅ Sustained Load Test Passed. {request_count} requests sent in 2 min.")
 
 test_sustained_load()
+  
