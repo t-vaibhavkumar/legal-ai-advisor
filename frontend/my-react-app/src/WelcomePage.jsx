@@ -22,7 +22,7 @@ const WelcomePage = () => {
 
       {/* Centered content */}
       <div className="welcome-content">
-        <h1>Welcome to the Legal AI Chatbot</h1>
+        <h1>Welcome to Nomos 1.0</h1>
         <p>
           The legal AI chatbot is made to ease legal issues. Whether you have a query about the
           Indian legal system or simply want to learn—you’re in the right place.
