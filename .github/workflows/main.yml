@@ -5,6 +5,8 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
+    env: 
+      CI: "True"
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -37,8 +39,15 @@ jobs:
             cat backend.log  # Print backend logs for debugging
           fi
 
-      - name: Run Unit Tests (If Backend is Running)
+      - name: Run CI-Compatible Tests Only
         if: env.RUN_TESTS == 'true'
         run: |
-          pytest tests/
+          echo "⚙️ Running only CI-safe tests (local-only tests will be skipped)..."
+          pytest -m "not local_only" tests/
+  
+      - name: Notify About Skipped Tests
+        run: |
+          echo "⚠️ Ollama- and DB-dependent tests are marked as @pytest.mark.local_only"
+          echo "   They are automatically skipped on GitHub Actions."
+          echo "   Run all tests locally using: pytest tests/"
 
