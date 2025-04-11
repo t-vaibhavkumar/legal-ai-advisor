@@ -1,0 +1,93 @@
+/* Reset everything */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #000;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Root wrapper */
+  #root {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  
+  /* App wrapper */
+  .App {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Main welcome layout */
+  .welcome-page {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-color: #000;
+  }
+  
+  /* Orb background */
+  .orb-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  /* Foreground content */
+  .welcome-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 700px;
+    text-align: center;
+    padding: 2rem;
+    margin: 0 auto; /* Ensure center alignment */
+  }
+  
+  /* Text and button styling */
+  .welcome-content h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+  
+  .welcome-content p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    color: #ccc;
+    line-height: 1.6;
+  }
+  
+  .welcome-content button {
+    padding: 0.9rem 2rem;
+    font-size: 1.1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .welcome-content button:hover {
+    background-color: #0056b3;
+  }
+  

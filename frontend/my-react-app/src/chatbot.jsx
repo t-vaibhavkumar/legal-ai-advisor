@@ -69,6 +69,7 @@ const Chatbot = () => {
       top: chatBoxRef.current.scrollHeight,
       behavior: "smooth",
     });
+    console.log("Messages updated:", messages);
   }, [messages]);
 
   useEffect(() => {
