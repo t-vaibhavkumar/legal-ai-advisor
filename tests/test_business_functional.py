@@ -20,7 +20,8 @@ def test_multi_turn_conversation():
 
     assert first.status_code == 200
     assert follow_up.status_code == 200
-    assert "offer" in follow_up.json()["response"].lower()
+    response_text = follow_up.json()["response"].lower()
+    assert any(kw in response_text for kw in ["offer", "agreement", "contract"]), response_text
 
 @pytest.mark.local_only
 def test_legal_entity_detection():

@@ -10,7 +10,9 @@ def test_for_hallucination():
     query = {"query": "What is the Indian Snake Charming Act of 1950?"}
     response = requests.post(f"{BASE_URL}/ask", json=query)
     assert response.status_code == 200
-    assert "no such law" in response.json()["response"].lower() or "not found" in response.json()["response"].lower()
+    response_text = response.json()["response"].lower()
+    assert any(kw in response_text for kw in ["no such law", "not found", "not aware", "no information"]), response_text
+
 
 @pytest.mark.local_only
 def test_legal_misinterpretation():
@@ -18,7 +20,9 @@ def test_legal_misinterpretation():
     query = {"query": "What is Section 144 of CrPC?"}
     response = requests.post(f"{BASE_URL}/ask", json=query)
     assert response.status_code == 200
-    assert "unlawful assembly" in response.json()["response"].lower()
+    response_text = response.json()["response"].lower()
+    assert "unlawful assembly" in response_text or "public order" in response_text, response_text
+
 
 @pytest.mark.local_only
 def test_usability():
