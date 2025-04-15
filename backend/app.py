@@ -1,104 +1,48 @@
-from flask import jsonify
 import logging
-import requests
-import os
-import sys
-import json
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from chatbot import ask_llm_with_context  # Updated import
 from dataset.vector_database import search_documents
 
+# Configure Logging
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-# Dictionary to store conversation histories
-conversation_contexts = {}
+app = Flask(__name__)
+CORS(app)
+# CORS(app, resources={r"/*": {"origins": "http://172.16.239.65:5173"}})
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
-def ask_llm_with_context(query, conversation_id="default", is_new_conversation=False):
-    """
-    Retrieves relevant legal texts and queries Llama 3.2 with conversation context.
+@app.route('/ask', methods=['POST'])
+def ask_question():
+    data = request.get_json()
+    logger.debug(f"Received data: {data}")
     
-    Args:
-        query: The user's question
-        conversation_id: Unique identifier for this conversation
-        is_new_conversation: Boolean indicating if this is a new conversation
-    """
-    # Reset context if this is a new conversation
-    if is_new_conversation:
-        logger.debug(f"Starting new conversation with ID: {conversation_id}")
-        conversation_contexts[conversation_id] = []
+    # Extract data from request
+    query = data["query"]
+    conversation_id = data.get("conversationId", "default")  # Get conversation ID
+    is_new_conversation = data.get("isNewConversation", False)  # Check if new conversation
     
-    # Get or initialize the conversation history
-    if conversation_id not in conversation_contexts:
-        logger.debug(f"Initializing context for conversation ID: {conversation_id}")
-        conversation_contexts[conversation_id] = []
-    
-    # Search for relevant documents
-    relevant_docs = search_documents(query)
-    context = "\n".join(relevant_docs)
-    
-    # Build conversation history string
-    conversation_history = ""
-    if conversation_contexts[conversation_id]:
-        conversation_history = "Previous conversation:\n"
-        for exchange in conversation_contexts[conversation_id]:
-            conversation_history += f"User: {exchange['user']}\n"
-            conversation_history += f"Assistant: {exchange['assistant']}\n"
-    
-    # Create the prompt with context and conversation history
-    prompt = f"""You are an AI expert in Indian law. Use the legal documents provided to answer queries.
-
-    Context:
-    {context}
-    
-    {conversation_history}
-    
-    Current Question: {query}
-    Answer:
-    """
-
-    logger.debug(f"Sending prompt with conversation history for ID: {conversation_id}")
-    
-    url = "http://localhost:11434/api/generate"
-
-    payload = {
-        "model": "llama3.2",  
-        "prompt": prompt,
-        "stream": False
-    }
-
-    headers = {"Content-Type": "application/json"}
+    logger.debug(f"Processing query: '{query}' for conversation: {conversation_id} (new: {is_new_conversation})")
 
     try:
-        response = requests.post(url, data=json.dumps(payload), headers=headers, timeout=10)
-        response.raise_for_status()
+        # Pass conversation context parameters to the chatbot function
+        response = ask_llm_with_context(query, conversation_id, is_new_conversation)
+        logger.debug(f"LLM Response: {response}")
+        data = {"response": response}
+        return jsonify(data)
+    except Exception as e:
+        logger.error(f"Error processing request: {str(e)}", exc_info=True)
+        return jsonify({"error": "Internal server error. Check logs for details."})
 
-        data = response.json()
-        
-        if "response" in data:
-            assistant_response = data["response"]
-            
-            # Store this exchange in the conversation history
-            conversation_contexts[conversation_id].append({
-                "user": query,
-                "assistant": assistant_response
-            })
-            
-            # Keep conversation history to a reasonable size (last 5 exchanges)
-            if len(conversation_contexts[conversation_id]) > 5:
-                conversation_contexts[conversation_id] = conversation_contexts[conversation_id][-5:]
-                
-            logger.debug(f"Updated conversation history for ID: {conversation_id}")
-            return assistant_response
-        else:
-            logger.error("No 'response' key found in API response")
-            return "Error: No response received from LLM"
+@app.route('/debug_search', methods=['POST'])
+def debug_search():
+    data = request.get_json()
+    query = data.get("query", "")
+    
+    retrieved_knowledge = search_documents(query)
+    return jsonify({"retrieved": retrieved_knowledge})
 
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Request failed: {e}")
-        return f"Error: Unable to reach LLM API - {e}"
-
-# Keep the original function for backward compatibility
-def ask_llm(query):
-    """Legacy function that calls the new context-aware function"""
-    return ask_llm_with_context(query)
+if __name__ == '__main__':
+    print("hello")
+    app.run(host="0.0.0.0", port=5000, debug=True)
