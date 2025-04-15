@@ -1,13 +1,13 @@
-import React from 'react';
-import Chatbot from './chatbot'; // Ensure the chatbot file exists
+import React from "react";
+import WelcomePage from "./WelcomePage";
+import "./App.css"; // If you have global styles
 
 function App() {
-    return (
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-            <h1>Welcome to My AI Chatbot</h1>
-            <Chatbot />
-        </div>
-    );
+  return (
+    <div className="App">
+      <WelcomePage />
+    </div>
+  );
 }
 
 export default App;

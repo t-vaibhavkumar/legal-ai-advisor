@@ -1,8 +1,8 @@
 import os
-import torch
-from langchain_community.vectorstores import Chroma  # Updated import
-from langchain_huggingface import HuggingFaceEmbeddings  # Updated import
-from tqdm import tqdm  # Progress bar
+import torch # type: ignore
+from langchain_community.vectorstores import Chroma  # type: ignore # Updated import
+from langchain_huggingface import HuggingFaceEmbeddings  # type: ignore # Updated import
+from tqdm import tqdm  # type: ignore # Progress bar
 
 # Ensure ChromaDB is always stored in /dataset/chroma_db
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # Get project root

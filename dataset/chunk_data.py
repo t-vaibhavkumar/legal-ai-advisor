@@ -1,4 +1,4 @@
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter # type: ignore
 
 with open("legal_texts.txt", "r", encoding="utf-8") as f:
     text = f.read()

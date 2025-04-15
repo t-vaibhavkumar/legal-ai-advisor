@@ -1,60 +1,66 @@
+// chatbot.jsx
 import React, { useState, useEffect, useRef } from "react";
+import { db } from "./firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import "./chatbot.css";
 
-const askQuestion = async (query) => {
-  const backendUrl = "http://127.0.0.1:5000/ask"
-  try {
-    const temp = {
-      "query" : query
-    }
-    console.log("Sending request to API...");
-    const response = await fetch(backendUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify( temp ),
-    });
-
-    console.log("Response received:", response);
-
-    const data = await response.json();
-    console.log("API Response:", data);
-    return data.response;
-  } catch (error) {
-    console.error("Error fetching response:", error);
-    return "Error fetching response";
-  }
-};
-
-const Chatbot = () => {
+const Chatbot = ({ user }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const chatBoxRef = useRef(null);
   const inputRef = useRef(null);
 
-  // const test = () => {
-  //   botReplyText = "<script>alert('Hacked!')</script>"
-  //   const botReply = { text: botReplyText, sender: "bot" };
+  const saveMessages = async (updatedMessages) => {
+    if (!user || !user.uid) return;
+  
+    const userDocRef = doc(db, "chats", user.uid);
+    await setDoc(userDocRef, { messages: updatedMessages });
+  };
+  
 
-  //   setMessages((prevMessages) => [...prevMessages, botReply]);
-  // }
+  const loadMessages = async () => {
+    if (!user || !user.uid) return;
+  
+    const userDocRef = doc(db, "chats", user.uid);
+    const docSnap = await getDoc(userDocRef);
+    if (docSnap.exists()) {
+      setMessages(docSnap.data().messages || []);
+    }
+  };
+  
+
+  useEffect(() => {
+    if (user) loadMessages();
+  }, [user]);
+
+  const askQuestion = async (query) => {
+    const response = await fetch("http://172.16.239.65:5000/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query }),
+    });
+    const data = await response.json();
+    return data.response;
+  };
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
     setLoading(true);
     const userMessage = { text: input, sender: "user" };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    const updatedUserMessages = [...messages, userMessage];
+
+    setMessages(updatedUserMessages);
     setInput("");
 
     const botReplyText = await askQuestion(input);
     const botReply = { text: botReplyText, sender: "bot" };
 
-    setMessages((prevMessages) => [...prevMessages, botReply]);
+    const updatedAllMessages = [...updatedUserMessages, botReply];
+    setMessages(updatedAllMessages);
+    saveMessages(updatedAllMessages); // 🔥 Save to Firestore
     setLoading(false);
-
-    // Keep input focused
-    setTimeout(() => inputRef.current?.focus(), 10);
   };
 
   const handleKeyDown = (event) => {
@@ -77,13 +83,21 @@ const Chatbot = () => {
 
   return (
     <div className="chat-container">
+      <div className="chat-brand">Nomos 1.0</div>
+
       <div className="chat-box" ref={chatBoxRef}>
         {messages.map((msg, index) => (
           <div key={index} className={`message ${msg.sender}`}>
             {msg.text}
           </div>
         ))}
+        {loading && (
+          <div className="message bot typing-indicator">
+            Bot is typing<span className="dots"><span>.</span><span>.</span><span>.</span></span>
+          </div>
+        )}
       </div>
+
       <div className="chat-input">
         <input
           type="text"
@@ -94,7 +108,9 @@ const Chatbot = () => {
           placeholder={loading ? "Waiting for response..." : "Ask anything..."}
           disabled={loading}
         />
-        <button onClick={handleSend} disabled={loading}>➤</button>
+        <button onClick={handleSend} disabled={loading}>
+          {loading ? <div className="spinner"></div> : "➤"}
+        </button>
       </div>
     </div>
   );
