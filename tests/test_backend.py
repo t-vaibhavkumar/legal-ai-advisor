@@ -7,7 +7,7 @@ BACKEND_URL = "http://127.0.0.1:5000/ask"
 
 class BackendTests(unittest.TestCase):
 
-    @patch("requests.post")  # Mock requests.post
+    @patch("requests.post")
     def test_backend_reachable(self, mock_post):
         """Check if the backend API is reachable"""
 
@@ -19,7 +19,7 @@ class BackendTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("response", response.json())
 
-    @patch("requests.post")  # Mock Ollama API response
+    @patch("requests.post")  
     def test_knowledge_base(self, mock_post):
         """Check if the knowledge base retrieval works"""
 
