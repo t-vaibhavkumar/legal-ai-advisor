@@ -1,7 +1,14 @@
 uvicorn
 chromadb
 ollama
+flask
+flask-cors
 pydantic
+requests
+bs4
+json5
+torch
+tqdm
 langchain
 sentence-transformers
 torch
@@ -14,3 +21,6 @@ langchain-community
 langchain-huggingface
 pytest
 
+langchain-community
+langchain-huggingface
+chromadb
