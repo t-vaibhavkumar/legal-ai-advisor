@@ -1,69 +1,67 @@
+// chatbot.jsx
 import React, { useState, useEffect, useRef } from "react";
+import { db } from "./firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import "./chatbot.css";
 
-const askQuestion = async (query) => {
-  const backendUrl = "http://172.16.239.65:5000/ask"
-  try {
-    const temp = {
-      "query" : query
-    }
-    console.log("Sending request to API...");
-    const response = await fetch(backendUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify( temp ),
-    });
-
-    console.log("Response received:", response);
-
-    const data = await response.json();
-    console.log("API Response:", data);
-    return data.response;
-  } catch (error) {
-    console.error("Error fetching response:", error);
-    return "⚠️ Sorry, the server is not responding. Please try again later.";
-  }  
-};
-
-const Chatbot = () => {
+const Chatbot = ({ user }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const chatBoxRef = useRef(null);
   const inputRef = useRef(null);
 
-  // const test = () => {
-  //   botReplyText = "<script>alert('Hacked!')</script>"
-  //   const botReply = { text: botReplyText, sender: "bot" };
+  const saveMessages = async (updatedMessages) => {
+    if (!user || !user.uid) return;
+  
+    const userDocRef = doc(db, "chats", user.uid);
+    await setDoc(userDocRef, { messages: updatedMessages });
+  };
+  
 
-  //   setMessages((prevMessages) => [...prevMessages, botReply]);
-  // }
+  const loadMessages = async () => {
+    if (!user || !user.uid) return;
+  
+    const userDocRef = doc(db, "chats", user.uid);
+    const docSnap = await getDoc(userDocRef);
+    if (docSnap.exists()) {
+      setMessages(docSnap.data().messages || []);
+    }
+  };
+  
+
+  useEffect(() => {
+    if (user) loadMessages();
+  }, [user]);
+
+  const askQuestion = async (query) => {
+    const response = await fetch("http://172.16.239.65:5000/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query }),
+    });
+    const data = await response.json();
+    return data.response;
+  };
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
-  
+
     setLoading(true);
     const userMessage = { text: input, sender: "user" };
     const updatedUserMessages = [...messages, userMessage];
-  
+
     setMessages(updatedUserMessages);
     setInput("");
-    localStorage.setItem("chat-messages", JSON.stringify(updatedUserMessages));
-  
+
     const botReplyText = await askQuestion(input);
-    const botReply = {
-      text: botReplyText,
-      sender: "bot"
-    };
-  
+    const botReply = { text: botReplyText, sender: "bot" };
+
     const updatedAllMessages = [...updatedUserMessages, botReply];
     setMessages(updatedAllMessages);
-    localStorage.setItem("chat-messages", JSON.stringify(updatedAllMessages));
+    saveMessages(updatedAllMessages); // 🔥 Save to Firestore
     setLoading(false);
-  
-    setTimeout(() => inputRef.current?.focus(), 10);
   };
-  
 
   const handleKeyDown = (event) => {
     if (event.key === "Enter" && !loading) {
@@ -71,20 +69,12 @@ const Chatbot = () => {
       handleSend();
     }
   };
-  useEffect(() => {
-    const savedMessages = sessionStorage.getItem("chat-messages");
-    if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
-    }
-  }, []);
-  
 
   useEffect(() => {
     chatBoxRef.current?.scrollTo({
       top: chatBoxRef.current.scrollHeight,
       behavior: "smooth",
     });
-    console.log("Messages updated:", messages);
   }, [messages]);
 
   useEffect(() => {
@@ -93,10 +83,7 @@ const Chatbot = () => {
 
   return (
     <div className="chat-container">
-       {/* Brand Header */}
-    <div className="chat-brand">
-      Nomos 1.0
-    </div>
+      <div className="chat-brand">Nomos 1.0</div>
 
       <div className="chat-box" ref={chatBoxRef}>
         {messages.map((msg, index) => (
@@ -104,14 +91,13 @@ const Chatbot = () => {
             {msg.text}
           </div>
         ))}
-{loading && (
-  <div className="message bot typing-indicator">
-    Bot is typing<span className="dots"><span>.</span><span>.</span><span>.</span></span>
-  </div>
-)}
-
-
+        {loading && (
+          <div className="message bot typing-indicator">
+            Bot is typing<span className="dots"><span>.</span><span>.</span><span>.</span></span>
+          </div>
+        )}
       </div>
+
       <div className="chat-input">
         <input
           type="text"
@@ -122,13 +108,9 @@ const Chatbot = () => {
           placeholder={loading ? "Waiting for response..." : "Ask anything..."}
           disabled={loading}
         />
-<button onClick={handleSend} disabled={loading}>
-  {loading ? (
-    <div className="spinner"></div>
-  ) : (
-    "➤"
-  )}
-</button>
+        <button onClick={handleSend} disabled={loading}>
+          {loading ? <div className="spinner"></div> : "➤"}
+        </button>
       </div>
     </div>
   );
