@@ -6,8 +6,8 @@
 
 .sidebar {
   width: 250px;
-  min-width: 250px; /* Prevent shrinking when expanded */
-  flex-shrink: 0; /* Prevent the sidebar from shrinking */
+  min-width: 250px;
+  flex-shrink: 0;
   background: #111;
   color: #fff;
   padding: 1rem;
@@ -150,6 +150,25 @@
   background-color: #333;
   color: #fff;
 }
+.chat-rename-container {
+  flex-grow: 1;
+  margin-right: 8px;
+}
+
+.chat-rename-input {
+  width: 100%;
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.chat-rename-input:focus {
+  border-color: #007bff;
+}
 
 .chat-options-menu {
   position: absolute;
@@ -159,7 +178,16 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   z-index: 10;
   overflow: hidden;
+  min-width: 120px;
 }
+.chat-options-menu-item.rename {
+  color: #fff;
+}
+
+.chat-options-menu-item.rename:hover {
+  background-color: #444;
+}
+
 
 .chat-options-menu-item {
   padding: 0.5rem 1rem;
@@ -522,10 +550,60 @@
   }
 }
 
-.welcome-message, .select-conversation-prompt {
+.welcome-message-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  color: #888;
-  margin: 2rem auto;
+  height: 70vh;
+  padding: 2rem;
+}
+
+.welcome-guest-notice {
+  color: #ff9800;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  background-color: rgba(255, 152, 0, 0.1);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #ff9800;
+}
+
+.guest-indicator {
+  display: inline-block;
+  background-color: #444;
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+
+.welcome-logo {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.welcome-title {
+  font-size: 2.5rem;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.welcome-tagline {
+  font-size: 1.2rem;
+  color: #bbb;
+  margin-bottom: 2rem;
+  font-style: italic;
+}
+
+.welcome-instruction {
+  font-size: 1.1rem;
+  color: #999;
+  max-width: 500px;
 }
 
 .empty-history {
@@ -637,5 +715,16 @@
 @media (max-width: 768px) {
   .chat-view {
     width: 100%;
+  }
+  .welcome-title {
+    font-size: 2rem;
+  }
+  
+  .welcome-tagline {
+    font-size: 1rem;
+  }
+  
+  .welcome-logo {
+    font-size: 3rem;
   }
 }
