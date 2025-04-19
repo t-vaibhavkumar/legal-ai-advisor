@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import ReactMarkdown from 'react-markdown';
 import {
   collection,
   doc,
@@ -401,31 +402,39 @@ const ChatPage = ({ user }) => {
       </div>
 
       {/* New container for centering the chat view */}
-      <div className="chat-container">
+      <div className="chat-container" ref={chatContainerRef}>
         <div className="chat-view">
           <div className="chat-box" ref={chatBoxRef}>
             {currentConvId ? (
               <>
                 {messages.length > 0 ? (
-                  messages.map((msg, idx) => (
-                    <div
-                      key={idx}
-                      className={`message-container ${msg.sender}`}
-                    >
-                      <div
-                        className={`message ${msg.sender} ${
-                          msg.error ? "error-text" : ""
-                        }`}
-                      >
-                        {msg.text}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="welcome-message">
-                    <p>Start a new conversation by typing a message below.</p>
-                  </div>
-                )}
+  messages.map((msg, idx) => (
+    <div
+      key={idx}
+      className={`message-container ${msg.sender}`}
+    >
+      {msg.sender === 'user' ? (
+        // User message in bubble format
+        <div className={`message ${msg.sender}`}>
+          {msg.text}
+        </div>
+      ) : (
+        // Bot message in full-width format
+        <div className="bot-response">
+          {msg.error ? (
+            <div className="error-text">{msg.text}</div>
+          ) : (
+            <ReactMarkdown>{msg.text}</ReactMarkdown>
+          )}
+        </div>
+      )}
+    </div>
+  ))
+) : (
+  <div className="welcome-message">
+    <p>Start a new conversation by typing a message below.</p>
+  </div>
+)}
 
                 {loadingConvId === currentConvId && (
                   <div className="message-container bot">

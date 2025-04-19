@@ -187,18 +187,17 @@
   justify-content: center;
   background: #000;
   position: relative;
-  overflow-y: auto; /* Add this to enable scrolling on the entire container */
+  overflow-y: auto; /* Enable scrolling on the entire container */
 }
 
-/* Modify chat-view to be a minimum height rather than 100% height */
 .chat-view {
-  width: 800px;
+  width: 800px; /* Fixed width for the chat area */
   display: flex;
   flex-direction: column;
   background: #000;
   color: #fff;
-  min-height: 100%; /* Change from height: 100% to min-height: 100% */
-  max-width: 100%;
+  min-height: 100%; /* Use min-height instead of height */
+  max-width: 100%; /* Ensure it doesn't overflow on small screens */
 }
 
 /* Hiding the original chat-brand since it's now in the sidebar */
@@ -211,11 +210,11 @@
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 100%; /* Ensure it takes full width of its parent (.chat-view) */
   overflow-y: visible; /* Change from auto to visible to remove independent scrolling */
 }
 
-/* Make chat-input stay at the bottom */
+/* Updated chat input styles */
 .chat-input {
   display: flex;
   padding: 1rem;
@@ -225,6 +224,7 @@
   background: #000; /* Match background color */
   z-index: 10; /* Ensure it's above other content */
 }
+
 .chat-input-container {
   display: flex;
   align-items: center;
@@ -237,7 +237,7 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   border: 1px solid #444;
   min-height: 56px;
-  max-height: 150px; /* Reduced maximum height from 150px to 100px */
+  max-height: 150px; /* Increased maximum height for the container */
   overflow: hidden;
 }
 
@@ -253,7 +253,7 @@
   resize: none; /* Prevent manual resizing */
   overflow-y: auto; /* Add scrollbar when needed */
   min-height: 24px;
-  max-height: 120px; /* Reduced maximum height from 120px to 80px */
+  max-height: 120px; /* Increased maximum height for the textarea */
   line-height: 1.5;
 }
 
@@ -285,7 +285,79 @@
   color: #555;
   cursor: not-allowed;
 }
+.bot-response {
+  width: 100%;
+  padding: 16px 20px;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: #f0f0f0;
+  line-height: 1.5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border-left: 3px solid #007bff;
+}
 
+.bot-response p {
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+.bot-response p:last-child {
+  margin-bottom: 0;
+}
+
+.bot-response pre {
+  background-color: #2d2d2d;
+  padding: 12px;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin: 0.8em 0;
+}
+
+.bot-response code {
+  background-color: #2d2d2d;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.bot-response ul, .bot-response ol {
+  margin-top: 0.5em;
+  margin-bottom: 1em;
+  padding-left: 1.5em;
+}
+
+.bot-response blockquote {
+  border-left: 3px solid #666;
+  margin-left: 0;
+  padding-left: 10px;
+  color: #ccc;
+}
+
+.bot-response a {
+  color: #3291ff;
+  text-decoration: none;
+}
+
+.bot-response a:hover {
+  text-decoration: underline;
+}
+
+.bot-response table {
+  border-collapse: collapse;
+  margin: 1em 0;
+  width: 100%;
+}
+
+.bot-response th, .bot-response td {
+  border: 1px solid #555;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.bot-response th {
+  background-color: #333;
+}
 /* Message styles */
 .message-container {
   display: flex;
@@ -293,12 +365,13 @@
   margin: 8px 0;
 }
 
-.message-container.user {
-  justify-content: flex-end;
+.message-container.bot {
+  width: 100%;
 }
 
-.message-container.bot {
-  justify-content: flex-start;
+.message-container.user {
+  justify-content: flex-end;
+  margin-bottom: 16px;
 }
 
 .message {
@@ -321,11 +394,78 @@
   border-bottom-left-radius: 4px;
 }
 
-.message.bot.error-text {
-  background-color: #8b0000;
-  color: white;
+/* Markdown formatting styles for bot messages */
+.message.bot p {
+  margin-top: 0;
+  margin-bottom: 0.8em;
+}
+
+.message.bot p:last-child {
+  margin-bottom: 0;
+}
+
+.message.bot ul, .message.bot ol {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  padding-left: 1.5em;
+}
+
+.message.bot code {
+  background-color: #2d2d2d;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.message.bot pre {
+  background-color: #2d2d2d;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+
+.message.bot blockquote {
+  border-left: 3px solid #666;
+  margin-left: 0;
+  padding-left: 10px;
+  color: #ccc;
+}
+
+.message.bot a {
+  color: #3291ff;
+  text-decoration: none;
+}
+
+.message.bot a:hover {
+  text-decoration: underline;
+}
+
+.message.bot table {
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.message.bot th, .message.bot td {
+  border: 1px solid #555;
+  padding: 6px 10px;
+}
+
+.message.bot th {
+  background-color: #333;
+}
+
+.message.bot hr {
+  border: none;
+  border-top: 1px solid #555;
+  margin: 1em 0;
+}
+
+.error-text {
+  color: #ff6b6b;
   font-weight: bold;
 }
+
 .spinner {
   width: 18px;
   height: 18px;
@@ -341,10 +481,16 @@
 }
 
 .typing-indicator {
-  font-style: italic;
-  opacity: 0.7;
   display: flex;
   align-items: center;
+  font-style: italic;
+  opacity: 0.7;
+  padding: 10px 16px;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: #f0f0f0;
+  border-left: 3px solid #007bff;
 }
 
 .dots {
@@ -447,6 +593,38 @@
 
 .delete-confirm-delete:hover {
   background-color: #f44336;
+}
+
+/* Code block syntax highlighting */
+.message.bot .code-block {
+  position: relative;
+}
+
+.message.bot .code-block pre {
+  margin-top: 0;
+}
+
+.message.bot .copy-code-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 3px 8px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  cursor: pointer;
+}
+
+.message.bot .code-block:hover .copy-code-button {
+  opacity: 1;
+}
+
+.message.bot .copy-code-button:hover {
+  background: #444;
 }
 
 /* Media queries for responsive design */
