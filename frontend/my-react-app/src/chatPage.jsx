@@ -222,18 +222,26 @@ const ChatPage = ({ user }) => {
     if (!input.trim() || loadingConvId || !user || !currentConvId) return;
     setLoadingConvId(currentConvId);
     
-    // Keep input as is without trimming to preserve line breaks
-    const userInputWithLineBreaks = input;
+    // Trim leading and trailing empty lines before sending
+    // This regex removes all whitespace lines at beginning and end but preserves internal formatting
+    const userInputWithLineBreaks = input.replace(/^\s*\n+|\n+\s*$/g, '');
+    
+    // Skip if there's nothing left after trimming
+    if (!userInputWithLineBreaks.trim()) {
+      setLoadingConvId(null);
+      setInput("");
+      return;
+    }
     
     const userMsg = {
       sender: "user",
-      text: userInputWithLineBreaks, // Use the non-trimmed input to preserve line breaks
+      text: userInputWithLineBreaks,
       timestamp: new Date().toISOString(),
     };
     const updatedMessages = [...messages, userMsg];
     setMessages(updatedMessages);
     setInput("");
-
+  
     try {
       const convRef = doc(
         db,
@@ -246,7 +254,7 @@ const ChatPage = ({ user }) => {
         messages: updatedMessages,
         lastUpdated: serverTimestamp(),
       });
-
+  
       const response = await fetch("http://127.0.0.1:5000/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -256,7 +264,7 @@ const ChatPage = ({ user }) => {
           isNewConversation: messages.length === 0,
         }),
       });
-
+  
       if (!response.ok) throw new Error(`API error: ${response.status}`);
       const data = await response.json();
       const botMsg = {
@@ -270,7 +278,7 @@ const ChatPage = ({ user }) => {
         messages: finalMessages,
         lastUpdated: serverTimestamp(),
       });
-
+  
       if (messages.length === 0) {
         // Create title from first line of input
         const firstLine = userInputWithLineBreaks.split('\n')[0];
@@ -323,10 +331,16 @@ const ChatPage = ({ user }) => {
       } else {
         // Send message when only Enter is pressed
         e.preventDefault();
-        sendMessage();
+        
+        // Don't perform the trimming here, just send the message
+        // The sendMessage function will handle the trimming
+        if (input.trim()) {
+          sendMessage();
+        }
       }
     }
   };
+  
 
   useEffect(() => {
     chatBoxRef.current?.scrollTo({
@@ -408,33 +422,33 @@ const ChatPage = ({ user }) => {
             {currentConvId ? (
               <>
                 {messages.length > 0 ? (
-  messages.map((msg, idx) => (
-    <div
-      key={idx}
-      className={`message-container ${msg.sender}`}
-    >
-      {msg.sender === 'user' ? (
-        // User message in bubble format
-        <div className={`message ${msg.sender}`}>
-          {msg.text}
-        </div>
-      ) : (
-        // Bot message in full-width format
-        <div className="bot-response">
-          {msg.error ? (
-            <div className="error-text">{msg.text}</div>
-          ) : (
-            <ReactMarkdown>{msg.text}</ReactMarkdown>
-          )}
-        </div>
-      )}
-    </div>
-  ))
-) : (
-  <div className="welcome-message">
-    <p>Start a new conversation by typing a message below.</p>
-  </div>
-)}
+                  messages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`message-container ${msg.sender}`}
+                    >
+                      {msg.sender === 'user' ? (
+                        // User message in bubble format
+                        <div className={`message ${msg.sender}`}>
+                          {msg.text}
+                        </div>
+                      ) : (
+                        // Bot message in full-width format
+                        <div className="bot-response">
+                          {msg.error ? (
+                            <div className="error-text">{msg.text}</div>
+                          ) : (
+                            <ReactMarkdown>{msg.text}</ReactMarkdown>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="welcome-message">
+                    <p>Start a new conversation by typing a message below.</p>
+                  </div>
+                )}
 
                 {loadingConvId === currentConvId && (
                   <div className="message-container bot">
