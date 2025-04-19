@@ -31,6 +31,7 @@ const ChatPage = ({ user }) => {
   const chatBoxRef = useRef(null);
   const inputRef = useRef(null);
   const menuRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -45,6 +46,16 @@ const ChatPage = ({ user }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    const textarea = inputRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      const newHeight = Math.min(textarea.scrollHeight, 120); // Set maximum height to 80px (reduced)
+      textarea.style.height = `${newHeight}px`;
+    }
+  }, [input]);
 
   useEffect(() => {
     if (!user) return;
@@ -209,10 +220,13 @@ const ChatPage = ({ user }) => {
   const sendMessage = async () => {
     if (!input.trim() || loadingConvId || !user || !currentConvId) return;
     setLoadingConvId(currentConvId);
-    const trimmedInput = input.trim();
+    
+    // Keep input as is without trimming to preserve line breaks
+    const userInputWithLineBreaks = input;
+    
     const userMsg = {
       sender: "user",
-      text: trimmedInput,
+      text: userInputWithLineBreaks, // Use the non-trimmed input to preserve line breaks
       timestamp: new Date().toISOString(),
     };
     const updatedMessages = [...messages, userMsg];
@@ -236,7 +250,7 @@ const ChatPage = ({ user }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          query: trimmedInput,
+          query: userInputWithLineBreaks.trim(), // Still trim for the API request
           conversationId: currentConvId,
           isNewConversation: messages.length === 0,
         }),
@@ -257,10 +271,12 @@ const ChatPage = ({ user }) => {
       });
 
       if (messages.length === 0) {
+        // Create title from first line of input
+        const firstLine = userInputWithLineBreaks.split('\n')[0];
         const newTitle =
-          trimmedInput.length > 30
-            ? trimmedInput.substring(0, 30) + "..."
-            : trimmedInput;
+          firstLine.length > 30
+            ? firstLine.substring(0, 30) + "..."
+            : firstLine;
         await updateDoc(convRef, { title: newTitle });
         setConversations((prev) =>
           prev.map((c) =>
@@ -299,15 +315,27 @@ const ChatPage = ({ user }) => {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+    if (e.key === "Enter") {
+      if (e.shiftKey) {
+        // Allow new line when Shift+Enter is pressed
+        return; // This lets the default behavior happen (adding a new line)
+      } else {
+        // Send message when only Enter is pressed
+        e.preventDefault();
+        sendMessage();
+      }
     }
   };
 
   useEffect(() => {
     chatBoxRef.current?.scrollTo({
       top: chatBoxRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages]);
+  useEffect(() => {
+    chatContainerRef.current?.scrollTo({
+      top: chatContainerRef.current.scrollHeight,
       behavior: "smooth",
     });
   }, [messages]);
@@ -421,9 +449,8 @@ const ChatPage = ({ user }) => {
 
           <div className="chat-input">
             <div className="chat-input-container">
-              <input
+              <textarea
                 ref={inputRef}
-                type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -436,22 +463,22 @@ const ChatPage = ({ user }) => {
                 }
                 disabled={loadingConvId === currentConvId || !currentConvId}
               />
+              <button
+                className="send-button"
+                onClick={sendMessage}
+                disabled={
+                  !input.trim() ||
+                  loadingConvId === currentConvId ||
+                  !currentConvId
+                }
+              >
+                {loadingConvId === currentConvId ? (
+                  <div className="spinner"></div>
+                ) : (
+                  "➤"
+                )}
+              </button>
             </div>
-            <button
-              className="send-button"
-              onClick={sendMessage}
-              disabled={
-                !input.trim() ||
-                loadingConvId === currentConvId ||
-                !currentConvId
-              }
-            >
-              {loadingConvId === currentConvId ? (
-                <div className="spinner"></div>
-              ) : (
-                "➤"
-              )}
-            </button>
           </div>
         </div>
       </div>
