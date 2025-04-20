@@ -1,4 +1,3 @@
-// chatbot.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { db } from "./firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -19,6 +18,7 @@ const Chatbot = ({ user }) => {
   };
   
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const loadMessages = async () => {
     if (!user || !user.uid) return;
   
@@ -32,7 +32,7 @@ const Chatbot = ({ user }) => {
 
   useEffect(() => {
     if (user) loadMessages();
-  }, [user]);
+  }, [loadMessages, user]);
 
   const askQuestion = async (query) => {
     const response = await fetch("http://172.16.239.65:5000/ask", {
@@ -59,7 +59,7 @@ const Chatbot = ({ user }) => {
 
     const updatedAllMessages = [...updatedUserMessages, botReply];
     setMessages(updatedAllMessages);
-    saveMessages(updatedAllMessages); // 🔥 Save to Firestore
+    saveMessages(updatedAllMessages); 
     setLoading(false);
   };
 
