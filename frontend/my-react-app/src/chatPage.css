@@ -2,6 +2,7 @@
   display: flex;
   height: 100vh;
   position: relative;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -15,13 +16,18 @@
   flex-direction: column;
   border-right: 1px solid #333;
   transition: all 0.3s ease;
+  height: 100vh;
+  position: fixed; 
+  left: 0;
+  top: 0;
+  z-index: 10;
+  overflow-y: auto; 
 }
 
 .sidebar.collapsed {
   width: 50px;
   min-width: 50px;
   padding: 1rem 0;
-  overflow: hidden;
 }
 
 .sidebar-header {
@@ -208,33 +214,25 @@
   position: relative;
 }
 
-/* CHAT VIEW LAYOUT CHANGES */
 .chat-container {
   display: flex;
-  flex-direction: column; /* This is the key change - stack vertically */
+  flex-direction: column;
   flex-grow: 1;
-  justify-content: space-between; /* Space between chat history and input */
   background: #000;
   position: relative;
-  height: 100vh; /* Full viewport height */
-  overflow: hidden; /* Prevent outer scroll */
+  margin-left: 250px; 
+  height: 100vh;
+  width: calc(100% - 250px); 
+  overflow-y: auto; 
+  transition: margin-left 0.3s ease; 
+  padding-bottom: 90px; 
 }
-
-.chat-view {
-  width: 100%; /* Full width */
-  max-width: 800px; /* Max width for readability */
-  margin: 0 auto; /* Center in the container */
-  display: flex;
-  flex-direction: column;
-  background: #000;
-  color: #fff;
-  flex-grow: 1;
-  overflow-y: auto; /* Allow scrolling within chat view */
-  padding-bottom: 80px; /* Make space for input box */
+.sidebar.collapsed ~ .chat-container {
+  margin-left: 50px; 
+  width: calc(100% - 50px); 
 }
+n
 
-
-/* Hiding the original chat-brand since it's now in the sidebar */
 .chat-brand {
   display: none;
 }
@@ -247,16 +245,31 @@
   width: 100%;
 }
 
-/* Updated chat input styles */
+.chat-view {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  color: #fff;
+}
+
 .chat-input {
-  position: fixed; /* Fix to bottom */
+  position: fixed;
   bottom: 0;
-  left: 250px; /* Match sidebar width */
+  left: 250px; 
   right: 0;
   padding: 1rem;
   background: #000;
   z-index: 10;
-  transition: left 0.3s ease; /* Match sidebar transition */
+  transition: left 0.3s ease; 
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar.collapsed ~ .chat-input {
+  left: 50px; 
 }
 
 .chat-input-container {
@@ -271,14 +284,13 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   border: 1px solid #444;
   min-height: 56px;
-  max-height: 150px; /* Increased maximum height for the container */
+  max-height: 150px;
   overflow: hidden;
   max-width: 800px;
   margin: 0 auto;
+  transition: width 0.3s ease;
 }
-.sidebar.collapsed ~ .chat-container .chat-input {
-  left: 50px; /* Match collapsed sidebar width */
-}
+
 .message-container:last-child {
   margin-bottom: 20px;
 }
@@ -292,10 +304,10 @@
   color: white;
   outline: none;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  resize: none; /* Prevent manual resizing */
-  overflow-y: auto; /* Add scrollbar when needed */
+  resize: none; 
+  overflow-y: auto; 
   min-height: 24px;
-  max-height: 120px; /* Increased maximum height for the textarea */
+  max-height: 120px; 
   line-height: 1.5;
 }
 
@@ -400,7 +412,6 @@
 .bot-response th {
   background-color: #333;
 }
-/* Message styles */
 .message-container {
   display: flex;
   width: 100%;
@@ -421,7 +432,7 @@
   border-radius: 18px;
   max-width: 70%;
   word-wrap: break-word;
-  white-space: pre-wrap; /* Preserve line breaks */
+  white-space: pre-wrap; 
 }
 
 .message.user {
@@ -436,7 +447,6 @@
   border-bottom-left-radius: 4px;
 }
 
-/* Markdown formatting styles for bot messages */
 .message.bot p {
   margin-top: 0;
   margin-bottom: 0.8em;
@@ -570,22 +580,22 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  height: 70vh;  /* Use percentage of viewport height instead of fixed height */
+  height: 70vh;  
   padding: 2rem;
-  max-width: 600px;  /* Add max-width to prevent stretching on larger screens */
-  margin: 0 auto;    /* Center the container */
+  max-width: 600px;  
+  margin: 0 auto;    
 }
 
 .welcome-guest-notice {
   color: #ff9800;
   font-size: 0.9rem;
   background-color: rgba(255, 152, 0, 0.1);
-  padding: 12px 16px;   /* Increase padding */
+  padding: 12px 16px;   
   border-radius: 6px;
   border-left: 3px solid #ff9800;
-  width: 100%;          /* Take full width of parent */
+  width: 100%;         
   box-sizing: border-box;
-  max-width: 500px;     /* Limit width for better readability */
+  max-width: 500px;    
 }
 .temp-chat-icon {
   height: 20px;
@@ -609,7 +619,6 @@
   margin-left: 8px;
   vertical-align: middle;
 }
-/* Temporary chat button styling */
 .temp-chat {
   background: #ff9800;
   color: #fff;
@@ -631,7 +640,6 @@
   margin-bottom: 1rem;
 }
 
-/* Make sure the collapsed state handles the image properly */
 .sidebar.collapsed .temp-chat {
   width: 40px;
   height: 40px;
@@ -656,7 +664,6 @@
   background-color: #e08600;
 }
 
-/* Temporary chat warning */
 .temp-chat-warning {
   color: #ff9800;
   margin-top: 1rem;
@@ -679,23 +686,23 @@
   font-size: 2.5rem;
   color: #fff;
   margin-bottom: 1rem;
-  margin-top: 0;  /* Remove default margin */
+  margin-top: 0;  
 }
 
 .welcome-tagline {
   font-size: 1.2rem;
   color: #bbb;
-  margin-bottom: 2rem;  /* Increase space after tagline */
+  margin-bottom: 2rem;  
   font-style: italic;
-  line-height: 1.5;     /* Improve line height for readability */
+  line-height: 1.5;     
 }
 
 .welcome-instruction {
   font-size: 1.1rem;
   color: #999;
   max-width: 500px;
-  margin-bottom: 2rem;  /* Add margin between instruction and notice */
-  line-height: 1.5;     /* Improve line height for readability */
+  margin-bottom: 2rem;  
+  line-height: 1.5;     
 }
 
 .empty-history {
@@ -704,7 +711,6 @@
   margin-top: 1rem;
 }
 
-/* Confirmation Modal Styles */
 .delete-confirm-overlay {
   position: fixed;
   top: 0;
@@ -765,7 +771,6 @@
   background-color: #f44336;
 }
 
-/* Code block syntax highlighting */
 .message.bot .code-block {
   position: relative;
 }
@@ -797,7 +802,6 @@
   background: #444;
 }
 
-/* Media queries for responsive design */
 @media (max-width: 1000px) {
   .chat-view {
     width: 700px;

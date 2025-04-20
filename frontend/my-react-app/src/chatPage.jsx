@@ -37,10 +37,10 @@ const ChatPage = ({ user }) => {
   });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
-  const [showWelcomeScreen, setShowWelcomeScreen] = useState(true); // Add this state
+  const [showWelcomeScreen, setShowWelcomeScreen] = useState(true); 
   const [isGuest, setIsGuest] = useState(false);
-  const [guestConversations, setGuestConversations] = useState([]); // Local state for guest conversations
-  const [guestIdCounter, setGuestIdCounter] = useState(1); // Counter for generating guest conversation IDs
+  const [guestConversations, setGuestConversations] = useState([]);
+  const [guestIdCounter, setGuestIdCounter] = useState(1); 
   
   const chatBoxRef = useRef(null);
   const inputRef = useRef(null);
@@ -48,7 +48,6 @@ const ChatPage = ({ user }) => {
   const chatContainerRef = useRef(null);
   const renameInputRef = useRef(null);
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -62,7 +61,6 @@ const ChatPage = ({ user }) => {
     };
   }, []);
 
-  // Focus on rename input when it appears
   useEffect(() => {
     if (renameState.isRenaming && renameInputRef.current) {
       renameInputRef.current.focus();
@@ -70,18 +68,15 @@ const ChatPage = ({ user }) => {
     }
   }, [renameState.isRenaming]);
 
-  // Auto-resize textarea based on content
   useEffect(() => {
     const textarea = inputRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      const newHeight = Math.min(textarea.scrollHeight, 120); // Set maximum height
+      const newHeight = Math.min(textarea.scrollHeight, 120);
       textarea.style.height = `${newHeight}px`;
     }
   }, [input]);
 
-  // Fetch conversations when user is authenticated (for registered users only)
-// Replace or update this useEffect in chatPage.jsx (around line 76)
 useEffect(() => {
   if (!user || isGuest) return;
   
@@ -99,26 +94,21 @@ useEffect(() => {
       }));
       setConversations(chats);
       
-      // Check if there are any conversations with actual messages
       const hasMessagesInConversations = chats.some(chat => 
         chat.messages && chat.messages.length > 0
       );
       
-      // Only set currentConvId if there are chats with messages
       if (chats.length > 0 && isFirstLoad) {
         if (hasMessagesInConversations) {
-          // Find the first conversation that has messages
           const firstConvWithMessages = chats.find(chat => 
             chat.messages && chat.messages.length > 0
           );
           setCurrentConvId(firstConvWithMessages ? firstConvWithMessages.id : null);
         } else {
-          // Don't set currentConvId if there are no messages
           setCurrentConvId(null);
         }
       }
       
-      // Show welcome screen if no conversations with messages
       setShowWelcomeScreen(!hasMessagesInConversations);
       
       setInitialLoad(false);
@@ -130,10 +120,8 @@ useEffect(() => {
   fetchConversations();
 }, [user, isGuest, isFirstLoad]);
 
-  // For guest mode: Initialize with one conversation on first load
   useEffect(() => {
     if (isGuest && initialLoad) {
-      // Create a new conversation for guests on first load
       const newId = `guest-conv-${guestIdCounter}`;
       const updatedCounter = guestIdCounter + 1;
       setGuestIdCounter(updatedCounter);
@@ -150,16 +138,13 @@ useEffect(() => {
       setConversations([newChat]);
       setCurrentConvId(newId);
       setInitialLoad(false);
-      // Intentionally keep isFirstLoad as true here
       setShowWelcomeScreen(true);
     }
   }, [isGuest, initialLoad, guestIdCounter]);
   
   useEffect(() => {
-    // Update isGuest status whenever user changes
     setIsGuest(!user);
     
-    // Reset initial load state when user status changes
     if (!user) {
       setInitialLoad(true);
       setShowWelcomeScreen(true);
@@ -167,12 +152,10 @@ useEffect(() => {
     }
   }, [user]);
 
-  // Load messages for the current conversation
   useEffect(() => {
     if (!currentConvId) return;
     
     if (isGuest) {
-      // For guest mode: find messages in local state
       const currentConv = guestConversations.find(conv => conv.id === currentConvId);
       if (currentConv) {
         setMessages(currentConv.messages || []);
@@ -180,7 +163,6 @@ useEffect(() => {
         setMessages([]);
       }
     } else if (user) {
-      // For registered users: load from Firestore
       const loadMessages = async () => {
         try {
           const docRef = doc(
@@ -212,34 +194,25 @@ useEffect(() => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
   const startTemporaryChat = () => {
-    // Hide welcome screen when starting temporary chat
     setShowWelcomeScreen(false);
     
-    // Set temporary chat mode
     setIsTempChat(true);
     
-    // Clear current conversation selection but create a temporary ID
-    // This will be a unique identifier for the temporary chat
     const tempChatId = `temp-${Date.now()}`;
     setCurrentConvId(tempChatId);
     
-    // Clear messages
     setTempChatMessages([]);
     setMessages([]);
     
-    // Make sure sidebar is visible
     setSidebarCollapsed(false);
     
-    // Focus on input
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   const startNewConversation = async () => {
-    // Hide welcome screen when creating a new conversation
     setShowWelcomeScreen(false);
     
     if (isGuest) {
-      // For guest mode: create a new conversation in memory
       const newId = `guest-conv-${guestIdCounter}`;
       const updatedCounter = guestIdCounter + 1;
       setGuestIdCounter(updatedCounter);
@@ -263,7 +236,6 @@ useEffect(() => {
       return;
     }
     
-    // For registered users: create in Firestore
     if (!user) return;
     try {
       const newConvRef = doc(
@@ -297,26 +269,22 @@ useEffect(() => {
   const switchConversation = (convId) => {
     if (convId === currentConvId) return;
     
-    // Hide welcome screen when switching conversations
     setShowWelcomeScreen(false);
     
-    // If user is in temporary chat mode and clicks on another chat,
-    // exit temporary chat mode
     if (isTempChat) {
       setIsTempChat(false);
-      setTempChatMessages([]); // Clear temporary chat messages
+      setTempChatMessages([]); 
     }
     
     setCurrentConvId(convId);
     setInput("");
-    // Optionally collapse the sidebar after selecting a chat on mobile
     if (window.innerWidth < 768) {
       setSidebarCollapsed(true);
     }
   };
 
   const handleChatOptionsClick = (e, chatId) => {
-    e.stopPropagation(); // Prevent triggering chat selection
+    e.stopPropagation(); 
     setMenuOpenForChat(menuOpenForChat === chatId ? null : chatId);
   };
 
@@ -338,7 +306,6 @@ useEffect(() => {
     });
   };
 
-  // Start renaming a chat
   const startRenaming = (e, chatId, currentTitle) => {
     e.stopPropagation();
     setRenameState({
@@ -349,7 +316,6 @@ useEffect(() => {
     setMenuOpenForChat(null);
   };
 
-  // Cancel renaming
   const cancelRenaming = () => {
     setRenameState({
       isRenaming: false,
@@ -358,7 +324,6 @@ useEffect(() => {
     });
   };
 
-  // Save the new chat name
   const saveNewChatName = async () => {
     if (!renameState.chatId || !renameState.newTitle.trim()) {
       cancelRenaming();
@@ -366,7 +331,6 @@ useEffect(() => {
     }
 
     if (isGuest) {
-      // For guest mode: update in local state
       setGuestConversations(prev => 
         prev.map(conv => 
           conv.id === renameState.chatId 
@@ -405,7 +369,6 @@ useEffect(() => {
         title: renameState.newTitle.trim(),
       });
 
-      // Update local state
       setConversations((prev) =>
         prev.map((conv) =>
           conv.id === renameState.chatId
@@ -420,7 +383,6 @@ useEffect(() => {
     }
   };
 
-  // Handle key press in rename input
   const handleRenameKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -434,20 +396,18 @@ useEffect(() => {
     if (!deleteConfirmation.chatId) return;
 
     if (isGuest) {
-      // For guest mode: delete from local state
       const chatToDeleteId = deleteConfirmation.chatId;
       const updatedConversations = conversations.filter(conv => conv.id !== chatToDeleteId);
       setGuestConversations(updatedConversations);
       setConversations(updatedConversations);
       
-      // If the deleted chat was the current one, switch to another chat or clear view
       if (currentConvId === chatToDeleteId) {
         if (updatedConversations.length > 0) {
           setCurrentConvId(updatedConversations[0].id);
         } else {
           setCurrentConvId(null);
           setMessages([]);
-          setShowWelcomeScreen(true); // Show welcome screen if all chats are deleted
+          setShowWelcomeScreen(true); 
         }
       }
       
@@ -469,20 +429,18 @@ useEffect(() => {
 
       await deleteDoc(chatDocRef);
 
-      // Update local state
       const updatedConversations = conversations.filter(
         (conv) => conv.id !== chatToDeleteId
       );
       setConversations(updatedConversations);
 
-      // If the deleted chat was the current one, switch to another chat or clear view
       if (currentConvId === chatToDeleteId) {
         if (updatedConversations.length > 0) {
           setCurrentConvId(updatedConversations[0].id);
         } else {
           setCurrentConvId(null);
           setMessages([]);
-          setShowWelcomeScreen(true); // Show welcome screen if all chats are deleted
+          setShowWelcomeScreen(true);
         }
       }
 
@@ -492,20 +450,15 @@ useEffect(() => {
     }
   };
 
-  // Generate a dynamic title based on the conversation content
   const generateDynamicTitle = (userInput, botResponse) => {
-    // First try to extract a meaningful title from the bot's response
     const botFirstSentence = botResponse?.split(/[.!?]\s+/)[0];
     
-    // If bot response has a reasonable first sentence (between 3-50 chars), use it
     if (botFirstSentence && botFirstSentence.length >= 3 && botFirstSentence.length <= 50) {
       return botFirstSentence;
     }
     
-    // Otherwise use the first line of user input
     const userFirstLine = userInput.split('\n')[0].trim();
     
-    // If the first line is too long, truncate it
     if (userFirstLine.length > 40) {
       return userFirstLine.substring(0, 40) + "...";
     }
@@ -514,21 +467,16 @@ useEffect(() => {
   };
 
   const sendMessage = async () => {
-    // First check if there's no valid input or already in loading state
     if (!input.trim() || loadingConvId) return;
     
-    // Only set loading state when we have a valid conversation ID
     if (currentConvId) {
       setLoadingConvId(currentConvId);
     }
     
-    // Hide welcome screen when sending a message
     setShowWelcomeScreen(false);
     
-    // Trim leading and trailing empty lines before sending
     const userInputWithLineBreaks = input.replace(/^\s*\n+|\n+\s*$/g, '');
     
-    // Skip if there's nothing left after trimming
     if (!userInputWithLineBreaks.trim()) {
       setLoadingConvId(null);
       setInput("");
@@ -544,19 +492,13 @@ useEffect(() => {
     setMessages(updatedMessages);
     setInput("");
     
-    // After first message, this is no longer a first-load state
-// Find this section in your code (around line 536)
 setIsFirstLoad(false);
   
 try {
-  // For temporary chat mode
   if (isTempChat) {
-    // Just update local state
     setTempChatMessages(updatedMessages);
   }
-  // For guest mode: update local state only
   else if (isGuest) {
-    // Update local guest conversations
     setGuestConversations(prev => 
       prev.map(conv => 
         conv.id === currentConvId 
@@ -569,7 +511,6 @@ try {
       )
     );
   } else if (user) {
-    // For registered users: update Firestore
     const convRef = doc(
       db,
       "chats",
@@ -588,7 +529,7 @@ try {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      query: userInputWithLineBreaks.trim(), // Still trim for the API request
+      query: userInputWithLineBreaks.trim(), 
       conversationId: currentConvId,
       isNewConversation: messages.length === 0,
     }),
@@ -604,7 +545,6 @@ try {
   const finalMessages = [...updatedMessages, botMsg];
   setMessages(finalMessages);
   
-  // Update based on user type
   if (isTempChat) {
     setTempChatMessages(finalMessages);
   } else if (isGuest) {
@@ -617,7 +557,6 @@ try {
     );
     
     if (messages.length === 0) {
-      // Create a dynamic title for new conversations
       const newTitle = generateDynamicTitle(userInputWithLineBreaks, data.response);
       
       setGuestConversations(prev => 
@@ -628,7 +567,6 @@ try {
         )
       );
       
-      // Update the main conversations list for UI consistency
       setConversations(prev =>
         prev.map(c =>
           c.id === currentConvId ? { ...c, title: newTitle } : c
@@ -636,7 +574,6 @@ try {
       );
     }
   } else if (user) {
-    // Update Firestore for registered users
     const convRef = doc(
       db,
       "chats",
@@ -650,7 +587,6 @@ try {
     });
   
     if (messages.length === 0) {
-      // Create a dynamic title from the first message exchange
       const newTitle = generateDynamicTitle(userInputWithLineBreaks, data.response);
       
       await updateDoc(convRef, { title: newTitle });
@@ -672,7 +608,6 @@ try {
   const messagesWithError = [...updatedMessages, errorMsg];
   setMessages(messagesWithError);
   
-  // Update state based on user type
   if (isTempChat) {
     setTempChatMessages(messagesWithError);
   } else if (isGuest) {
@@ -708,14 +643,10 @@ try {
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       if (e.shiftKey) {
-        // Allow new line when Shift+Enter is pressed
-        return; // This lets the default behavior happen (adding a new line)
+        return; 
       } else {
-        // Send message when only Enter is pressed
         e.preventDefault();
         
-        // Don't perform the trimming here, just send the message
-        // The sendMessage function will handle the trimming
         if (input.trim()) {
           sendMessage();
         }
@@ -723,14 +654,12 @@ try {
     }
   };
 
-  // Sync guest conversations to main conversations list for UI consistency
   useEffect(() => {
     if (isGuest) {
       setConversations(guestConversations);
     }
   }, [isGuest, guestConversations]);
   
-  // Scroll to bottom when messages change
   useEffect(() => {
     chatBoxRef.current?.scrollTo({
       top: chatBoxRef.current.scrollHeight,
@@ -745,10 +674,7 @@ try {
     });
   }, [messages]);
 
-  // Modified renderWelcomeContent function using the new approach
-// Replace the renderWelcomeContent function (around line 624)
 const renderWelcomeContent = () => {
-  // Always show welcome screen based on the showWelcomeScreen state
   if (showWelcomeScreen && !isTempChat) {
     return (
       <div className="welcome-message-container">
@@ -882,16 +808,12 @@ const renderWelcomeContent = () => {
         </div>
       </div>
 
-      {/* Chat container */}
       <div className="chat-container" ref={chatContainerRef}>
         <div className="chat-view">
         <div className="chat-box" ref={chatBoxRef}>
-  {/* Welcome message or conversation messages */}
   {renderWelcomeContent()}
   
-  {/* Show messages either from temp chat or regular chat */}
   {isTempChat ? (
-    // Show temporary chat messages
     tempChatMessages.length > 0 && (
       <>
         {tempChatMessages.map((msg, idx) => (
@@ -900,12 +822,10 @@ const renderWelcomeContent = () => {
             className={`message-container ${msg.sender}`}
           >
             {msg.sender === 'user' ? (
-              // User message in bubble format
               <div className={`message ${msg.sender}`}>
                 {msg.text}
               </div>
             ) : (
-              // Bot message in full-width format
               <div className="bot-response">
                 {msg.error ? (
                   <div className="error-text">{msg.text}</div>
@@ -919,7 +839,6 @@ const renderWelcomeContent = () => {
       </>
     )
   ) : (
-    // Show regular conversation messages
     currentConvId && messages.length > 0 && (
       <>
         {messages.map((msg, idx) => (
@@ -928,12 +847,10 @@ const renderWelcomeContent = () => {
             className={`message-container ${msg.sender}`}
           >
             {msg.sender === 'user' ? (
-              // User message in bubble format
               <div className={`message ${msg.sender}`}>
                 {msg.text}
               </div>
             ) : (
-              // Bot message in full-width format
               <div className="bot-response">
                 {msg.error ? (
                   <div className="error-text">{msg.text}</div>
@@ -986,7 +903,6 @@ const renderWelcomeContent = () => {
   </div>
 </div>
 
-      {/* Delete Confirmation Modal */}
       {deleteConfirmation.isOpen && (
         <div className="delete-confirm-overlay">
           <div className="delete-confirm-modal">
