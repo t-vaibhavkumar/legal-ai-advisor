@@ -211,22 +211,28 @@
 /* CHAT VIEW LAYOUT CHANGES */
 .chat-container {
   display: flex;
+  flex-direction: column; /* This is the key change - stack vertically */
   flex-grow: 1;
-  justify-content: center;
+  justify-content: space-between; /* Space between chat history and input */
   background: #000;
   position: relative;
-  overflow-y: auto; /* Enable scrolling on the entire container */
+  height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Prevent outer scroll */
 }
 
 .chat-view {
-  width: 800px; /* Fixed width for the chat area */
+  width: 100%; /* Full width */
+  max-width: 800px; /* Max width for readability */
+  margin: 0 auto; /* Center in the container */
   display: flex;
   flex-direction: column;
   background: #000;
   color: #fff;
-  min-height: 100%; /* Use min-height instead of height */
-  max-width: 100%; /* Ensure it doesn't overflow on small screens */
+  flex-grow: 1;
+  overflow-y: auto; /* Allow scrolling within chat view */
+  padding-bottom: 80px; /* Make space for input box */
 }
+
 
 /* Hiding the original chat-brand since it's now in the sidebar */
 .chat-brand {
@@ -238,19 +244,19 @@
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  width: 100%; /* Ensure it takes full width of its parent (.chat-view) */
-  overflow-y: visible; /* Change from auto to visible to remove independent scrolling */
+  width: 100%;
 }
 
 /* Updated chat input styles */
 .chat-input {
-  display: flex;
+  position: fixed; /* Fix to bottom */
+  bottom: 0;
+  left: 250px; /* Match sidebar width */
+  right: 0;
   padding: 1rem;
-  width: 100%;
-  position: sticky; /* Change to sticky */
-  bottom: 0; /* Stick to bottom */
-  background: #000; /* Match background color */
-  z-index: 10; /* Ensure it's above other content */
+  background: #000;
+  z-index: 10;
+  transition: left 0.3s ease; /* Match sidebar transition */
 }
 
 .chat-input-container {
@@ -267,6 +273,14 @@
   min-height: 56px;
   max-height: 150px; /* Increased maximum height for the container */
   overflow: hidden;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.sidebar.collapsed ~ .chat-container .chat-input {
+  left: 50px; /* Match collapsed sidebar width */
+}
+.message-container:last-child {
+  margin-bottom: 20px;
 }
 
 .chat-input-container textarea {
@@ -556,18 +570,33 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  height: 70vh;
+  height: 70vh;  /* Use percentage of viewport height instead of fixed height */
   padding: 2rem;
+  max-width: 600px;  /* Add max-width to prevent stretching on larger screens */
+  margin: 0 auto;    /* Center the container */
 }
 
 .welcome-guest-notice {
   color: #ff9800;
-  margin-top: 1rem;
   font-size: 0.9rem;
   background-color: rgba(255, 152, 0, 0.1);
-  padding: 8px 12px;
+  padding: 12px 16px;   /* Increase padding */
   border-radius: 6px;
   border-left: 3px solid #ff9800;
+  width: 100%;          /* Take full width of parent */
+  box-sizing: border-box;
+  max-width: 500px;     /* Limit width for better readability */
+}
+.temp-chat-icon {
+  height: 20px;
+  width: auto;
+  object-fit: contain;
+  margin-right: 10px;
+}
+.temp-chat-icon-collapsed {
+  height: 24px;
+  width: 24px;
+  object-fit: contain;
 }
 
 .guest-indicator {
@@ -580,30 +609,93 @@
   margin-left: 8px;
   vertical-align: middle;
 }
+/* Temporary chat button styling */
+.temp-chat {
+  background: #ff9800;
+  color: #fff;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+.temp-chat-logo {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
 
+/* Make sure the collapsed state handles the image properly */
+.sidebar.collapsed .temp-chat {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.sidebar.collapsed .temp-chat img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.sidebar.collapsed .temp-chat-text {
+  display: none;
+}
+
+.temp-chat:hover {
+  background-color: #e08600;
+}
+
+/* Temporary chat warning */
+.temp-chat-warning {
+  color: #ff9800;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  background-color: rgba(255, 152, 0, 0.1);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #ff9800;
+}
 
 .welcome-logo {
   font-size: 4rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .welcome-title {
   font-size: 2.5rem;
   color: #fff;
   margin-bottom: 1rem;
+  margin-top: 0;  /* Remove default margin */
 }
 
 .welcome-tagline {
   font-size: 1.2rem;
   color: #bbb;
-  margin-bottom: 2rem;
+  margin-bottom: 2rem;  /* Increase space after tagline */
   font-style: italic;
+  line-height: 1.5;     /* Improve line height for readability */
 }
 
 .welcome-instruction {
   font-size: 1.1rem;
   color: #999;
   max-width: 500px;
+  margin-bottom: 2rem;  /* Add margin between instruction and notice */
+  line-height: 1.5;     /* Improve line height for readability */
 }
 
 .empty-history {
