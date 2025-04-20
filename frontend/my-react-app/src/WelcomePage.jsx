@@ -71,8 +71,8 @@ const WelcomePage = () => {
         {!user && (
           <div className="button-group">
 <button className="guest-btn" onClick={() => {
-  localStorage.removeItem("chat-user"); // Clear any stored user data
-  setUser(null); // Ensure user is null for guest mode
+  localStorage.removeItem("chat-user"); 
+  setUser(null); 
   setStarted(true);
 }}>
   Start as Guest
