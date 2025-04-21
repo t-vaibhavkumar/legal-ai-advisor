@@ -220,7 +220,6 @@ useEffect(() => {
   };
   useEffect(() => {
     if (isBotTyping) {
-      // Reset the counter when typing starts
       typingCountRef.current = 0;
       setTypingMessage("The bot is typing");
       setIsMessageFading(false);
@@ -252,7 +251,6 @@ useEffect(() => {
         }
       };
     } else {
-      // Clear the timer when typing stops
       if (typingTimerRef.current) {
         clearInterval(typingTimerRef.current);
         typingTimerRef.current = null;
@@ -263,14 +261,12 @@ useEffect(() => {
     }
   }, [isBotTyping]);
   const handleMessageTransition = () => {
-    // Start fading out
     setIsMessageFading(true);
     
-    // After fade out completes, change the message and fade in
     setTimeout(() => {
       setTypingMessage(nextMessageRef.current);
       setIsMessageFading(false);
-    }, 500); // Match this with the CSS transition duration (500ms)
+    }, 500); 
   };
 
   const startNewConversation = async () => {
@@ -538,7 +534,6 @@ useEffect(() => {
       setIsBotTyping(false);
       setLoadingConvId(null);
       
-      // Add interrupted message to the conversation
       const interruptedMsg = {
         sender: "bot",
         text: "Response was interrupted by the user.",
@@ -602,7 +597,6 @@ useEffect(() => {
     
     setIsFirstLoad(false);
     
-    // Set typing indicator to true
     setIsBotTyping(true);
     
     try {
@@ -635,12 +629,11 @@ useEffect(() => {
         });
       }
 
-      // Create new AbortController for this request
       const controller = new AbortController();
       setAbortController(controller);
       
       // const response = await fetch("http://127.0.0.1:5000/ask", {
-      const response = await fetch("https://6505-103-105-227-34.ngrok-free.app/ask", {
+      const response = await fetch("https://a4f3-49-204-71-90.ngrok-free.app/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -654,10 +647,8 @@ useEffect(() => {
       if (!response.ok) throw new Error(`API error: ${response.status}`);
       const data = await response.json();
       
-      // Clear the abort controller after successful completion
       setAbortController(null);
       
-      // Turn off typing indicator
       setIsBotTyping(false);
       
       const botMsg = {
@@ -721,15 +712,12 @@ useEffect(() => {
         }
       }
     } catch (err) {
-      // Check if this was an abort error
       if (err.name === 'AbortError') {
         console.log('Request was aborted');
-        // The cancelResponse function will handle adding the interrupted message
         return;
       }
       
       console.error("Send error:", err);
-      // Turn off typing indicator on error too
       setIsBotTyping(false);
       setAbortController(null);
       
@@ -771,7 +759,6 @@ useEffect(() => {
       }
     } finally {
       setLoadingConvId(null);
-      // Make sure typing indicator is off in finally block
       setIsBotTyping(false);
     }
 };
