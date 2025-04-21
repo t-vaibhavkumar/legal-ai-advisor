@@ -47,6 +47,14 @@ const ChatPage = ({ user }) => {
   const menuRef = useRef(null);
   const chatContainerRef = useRef(null);
   const renameInputRef = useRef(null);
+  const [tempChatTyping, setTempChatTyping] = useState(false);
+  const [isBotTyping, setIsBotTyping] = useState(false);
+  const [abortController, setAbortController] = useState(null);
+  const [typingMessage, setTypingMessage] = useState("The bot is typing");
+  const [isMessageFading, setIsMessageFading] = useState(false);
+  const typingTimerRef = useRef(null);
+  const typingCountRef = useRef(0);
+  const nextMessageRef = useRef("");
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -205,8 +213,64 @@ useEffect(() => {
     setMessages([]);
     
     setSidebarCollapsed(false);
+    setTempChatTyping(false);
+
     
     setTimeout(() => inputRef.current?.focus(), 100);
+  };
+  useEffect(() => {
+    if (isBotTyping) {
+      // Reset the counter when typing starts
+      typingCountRef.current = 0;
+      setTypingMessage("The bot is typing");
+      setIsMessageFading(false);
+      
+      typingTimerRef.current = setInterval(() => {
+        typingCountRef.current += 1;
+        
+        if (typingCountRef.current === 18) {
+          nextMessageRef.current = "It might take some time";
+          handleMessageTransition();
+        }
+        else if (typingCountRef.current === 23) {
+          nextMessageRef.current = "Getting the best response for you";
+          handleMessageTransition();
+        }
+        else if (typingCountRef.current === 30) {
+          nextMessageRef.current = "Hang tight, I'm working on it";
+          handleMessageTransition();
+        }
+        else if (typingCountRef.current === 38) {
+          nextMessageRef.current = "The bot is typing";
+          handleMessageTransition();
+        }
+      }, 1000);
+      
+      return () => {
+        if (typingTimerRef.current) {
+          clearInterval(typingTimerRef.current);
+        }
+      };
+    } else {
+      // Clear the timer when typing stops
+      if (typingTimerRef.current) {
+        clearInterval(typingTimerRef.current);
+        typingTimerRef.current = null;
+      }
+      typingCountRef.current = 0;
+      setTypingMessage("The bot is typing");
+      setIsMessageFading(false);
+    }
+  }, [isBotTyping]);
+  const handleMessageTransition = () => {
+    // Start fading out
+    setIsMessageFading(true);
+    
+    // After fade out completes, change the message and fade in
+    setTimeout(() => {
+      setTypingMessage(nextMessageRef.current);
+      setIsMessageFading(false);
+    }, 500); // Match this with the CSS transition duration (500ms)
   };
 
   const startNewConversation = async () => {
@@ -273,6 +337,7 @@ useEffect(() => {
     
     if (isTempChat) {
       setIsTempChat(false);
+      setTempChatTyping(false);
       setTempChatMessages([]); 
     }
     
@@ -466,6 +531,49 @@ useEffect(() => {
     return userFirstLine || "New Conversation";
   };
 
+  const cancelResponse = () => {
+    if (abortController) {
+      abortController.abort();
+      setAbortController(null);
+      setIsBotTyping(false);
+      setLoadingConvId(null);
+      
+      // Add interrupted message to the conversation
+      const interruptedMsg = {
+        sender: "bot",
+        text: "Response was interrupted by the user.",
+        timestamp: new Date().toISOString(),
+      };
+      
+      const updatedMessages = [...messages, interruptedMsg];
+      setMessages(updatedMessages);
+      
+      if (isTempChat) {
+        setTempChatMessages(updatedMessages);
+      } else if (isGuest) {
+        setGuestConversations(prev => 
+          prev.map(conv => 
+            conv.id === currentConvId 
+              ? { ...conv, messages: updatedMessages, lastUpdated: new Date() } 
+              : conv
+          )
+        );
+      } else if (user) {
+        const convRef = doc(
+          db,
+          "chats",
+          user.uid,
+          "conversations",
+          currentConvId
+        );
+        updateDoc(convRef, {
+          messages: updatedMessages,
+          lastUpdated: serverTimestamp(),
+        }).catch(err => console.error("Error updating messages:", err));
+      }
+    }
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || loadingConvId) return;
     
@@ -492,152 +600,180 @@ useEffect(() => {
     setMessages(updatedMessages);
     setInput("");
     
-setIsFirstLoad(false);
-  
-try {
-  if (isTempChat) {
-    setTempChatMessages(updatedMessages);
-  }
-  else if (isGuest) {
-    setGuestConversations(prev => 
-      prev.map(conv => 
-        conv.id === currentConvId 
-          ? { 
-              ...conv, 
-              messages: updatedMessages,
-              lastUpdated: new Date() 
-            } 
-          : conv
-      )
-    );
-  } else if (user) {
-    const convRef = doc(
-      db,
-      "chats",
-      user.uid,
-      "conversations",
-      currentConvId
-    );
-    await updateDoc(convRef, {
-      messages: updatedMessages,
-      lastUpdated: serverTimestamp(),
-    });
-  }
-
-  // const response = await fetch("http://127.0.0.1:5000/ask", {
-  const response = await fetch("https://9237-203-192-244-112.ngrok-free.app/ask", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      query: userInputWithLineBreaks.trim(), 
-      conversationId: currentConvId,
-      isNewConversation: messages.length === 0,
-    }),
-  });
-
-  if (!response.ok) throw new Error(`API error: ${response.status}`);
-  const data = await response.json();
-  const botMsg = {
-    sender: "bot",
-    text: data.response,
-    timestamp: new Date().toISOString(),
-  };
-  const finalMessages = [...updatedMessages, botMsg];
-  setMessages(finalMessages);
-  
-  if (isTempChat) {
-    setTempChatMessages(finalMessages);
-  } else if (isGuest) {
-    setGuestConversations(prev => 
-      prev.map(conv => 
-        conv.id === currentConvId 
-          ? { ...conv, messages: finalMessages, lastUpdated: new Date() } 
-          : conv
-      )
-    );
+    setIsFirstLoad(false);
     
-    if (messages.length === 0) {
-      const newTitle = generateDynamicTitle(userInputWithLineBreaks, data.response);
-      
-      setGuestConversations(prev => 
-        prev.map(conv => 
-          conv.id === currentConvId 
-            ? { ...conv, title: newTitle } 
-            : conv
-        )
-      );
-      
-      setConversations(prev =>
-        prev.map(c =>
-          c.id === currentConvId ? { ...c, title: newTitle } : c
-        )
-      );
-    }
-  } else if (user) {
-    const convRef = doc(
-      db,
-      "chats",
-      user.uid,
-      "conversations",
-      currentConvId
-    );
-    await updateDoc(convRef, {
-      messages: finalMessages,
-      lastUpdated: serverTimestamp(),
-    });
-  
-    if (messages.length === 0) {
-      const newTitle = generateDynamicTitle(userInputWithLineBreaks, data.response);
-      
-      await updateDoc(convRef, { title: newTitle });
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === currentConvId ? { ...c, title: newTitle } : c
-        )
-      );
-    }
-  }
-} catch (err) {
-  console.error("Send error:", err);
-  const errorMsg = {
-    sender: "bot",
-    text: "Sorry, I couldn't process your request. Please try again.",
-    error: true,
-    timestamp: new Date().toISOString(),
-  };
-  const messagesWithError = [...updatedMessages, errorMsg];
-  setMessages(messagesWithError);
-  
-  if (isTempChat) {
-    setTempChatMessages(messagesWithError);
-  } else if (isGuest) {
-    setGuestConversations(prev => 
-      prev.map(conv => 
-        conv.id === currentConvId 
-          ? { ...conv, messages: messagesWithError, lastUpdated: new Date() } 
-          : conv
-      )
-    );
-  } else if (user) {
+    // Set typing indicator to true
+    setIsBotTyping(true);
+    
     try {
-      const convRef = doc(
-        db,
-        "chats",
-        user.uid,
-        "conversations",
-        currentConvId
-      );
-      await updateDoc(convRef, {
-        messages: messagesWithError,
-        lastUpdated: serverTimestamp(),
+      if (isTempChat) {
+        setTempChatMessages(updatedMessages);
+      }
+      else if (isGuest) {
+        setGuestConversations(prev => 
+          prev.map(conv => 
+            conv.id === currentConvId 
+              ? { 
+                  ...conv, 
+                  messages: updatedMessages,
+                  lastUpdated: new Date() 
+                } 
+              : conv
+          )
+        );
+      } else if (user) {
+        const convRef = doc(
+          db,
+          "chats",
+          user.uid,
+          "conversations",
+          currentConvId
+        );
+        await updateDoc(convRef, {
+          messages: updatedMessages,
+          lastUpdated: serverTimestamp(),
+        });
+      }
+
+      // Create new AbortController for this request
+      const controller = new AbortController();
+      setAbortController(controller);
+      
+      // const response = await fetch("http://127.0.0.1:5000/ask", {
+      const response = await fetch("https://6505-103-105-227-34.ngrok-free.app/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: userInputWithLineBreaks.trim(), 
+          conversationId: currentConvId,
+          isNewConversation: messages.length === 0,
+        }),
+        signal: controller.signal
       });
-    } catch (firestoreErr) {
-      console.error("Firestore update error:", firestoreErr);
+
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
+      const data = await response.json();
+      
+      // Clear the abort controller after successful completion
+      setAbortController(null);
+      
+      // Turn off typing indicator
+      setIsBotTyping(false);
+      
+      const botMsg = {
+        sender: "bot",
+        text: data.response,
+        timestamp: new Date().toISOString(),
+      };
+      const finalMessages = [...updatedMessages, botMsg];
+      setMessages(finalMessages);
+      
+      if (isTempChat) {
+        setTempChatMessages(finalMessages);
+      } else if (isGuest) {
+        setGuestConversations(prev => 
+          prev.map(conv => 
+            conv.id === currentConvId 
+              ? { ...conv, messages: finalMessages, lastUpdated: new Date() } 
+              : conv
+          )
+        );
+        
+        if (messages.length === 0) {
+          const newTitle = generateDynamicTitle(userInputWithLineBreaks, data.response);
+          
+          setGuestConversations(prev => 
+            prev.map(conv => 
+              conv.id === currentConvId 
+                ? { ...conv, title: newTitle } 
+                : conv
+            )
+          );
+          
+          setConversations(prev =>
+            prev.map(c =>
+              c.id === currentConvId ? { ...c, title: newTitle } : c
+            )
+          );
+        }
+      } else if (user) {
+        const convRef = doc(
+          db,
+          "chats",
+          user.uid,
+          "conversations",
+          currentConvId
+        );
+        await updateDoc(convRef, {
+          messages: finalMessages,
+          lastUpdated: serverTimestamp(),
+        });
+      
+        if (messages.length === 0) {
+          const newTitle = generateDynamicTitle(userInputWithLineBreaks, data.response);
+          
+          await updateDoc(convRef, { title: newTitle });
+          setConversations((prev) =>
+            prev.map((c) =>
+              c.id === currentConvId ? { ...c, title: newTitle } : c
+            )
+          );
+        }
+      }
+    } catch (err) {
+      // Check if this was an abort error
+      if (err.name === 'AbortError') {
+        console.log('Request was aborted');
+        // The cancelResponse function will handle adding the interrupted message
+        return;
+      }
+      
+      console.error("Send error:", err);
+      // Turn off typing indicator on error too
+      setIsBotTyping(false);
+      setAbortController(null);
+      
+      const errorMsg = {
+        sender: "bot",
+        text: "Sorry, I couldn't process your request. Please try again.",
+        error: true,
+        timestamp: new Date().toISOString(),
+      };
+      const messagesWithError = [...updatedMessages, errorMsg];
+      setMessages(messagesWithError);
+      
+      if (isTempChat) {
+        setTempChatMessages(messagesWithError);
+      } else if (isGuest) {
+        setGuestConversations(prev => 
+          prev.map(conv => 
+            conv.id === currentConvId 
+              ? { ...conv, messages: messagesWithError, lastUpdated: new Date() } 
+              : conv
+          )
+        );
+      } else if (user) {
+        try {
+          const convRef = doc(
+            db,
+            "chats",
+            user.uid,
+            "conversations",
+            currentConvId
+          );
+          await updateDoc(convRef, {
+            messages: messagesWithError,
+            lastUpdated: serverTimestamp(),
+          });
+        } catch (firestoreErr) {
+          console.error("Firestore update error:", firestoreErr);
+        }
+      }
+    } finally {
+      setLoadingConvId(null);
+      // Make sure typing indicator is off in finally block
+      setIsBotTyping(false);
     }
-  }
-} finally {
-  setLoadingConvId(null);
-}
 };
 
   const handleKeyDown = (e) => {
@@ -808,7 +944,16 @@ const renderWelcomeContent = () => {
         </div>
       </div>
 
-      <div className="chat-container" ref={chatContainerRef}>
+      <div 
+  className="chat-container" 
+  ref={chatContainerRef}
+>
+  {isTempChat && tempChatMessages.length > 0 && (
+    <div className="temp-chat-reminder">
+      <img src="../src/assets/Temp.png" alt="Temp" className="temp-chat-reminder-icon" />
+      <span>Temporary Chat - Conversations won't be saved once you leave the chat</span>
+    </div>
+  )}
         <div className="chat-view">
         <div className="chat-box" ref={chatBoxRef}>
   {renderWelcomeContent()}
@@ -841,26 +986,40 @@ const renderWelcomeContent = () => {
   ) : (
     currentConvId && messages.length > 0 && (
       <>
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`message-container ${msg.sender}`}
-          >
-            {msg.sender === 'user' ? (
-              <div className={`message ${msg.sender}`}>
-                {msg.text}
-              </div>
-            ) : (
-              <div className="bot-response">
-                {msg.error ? (
-                  <div className="error-text">{msg.text}</div>
-                ) : (
-                  <ReactMarkdown>{msg.text}</ReactMarkdown>
-                )}
-              </div>
-            )}
+{messages.map((msg, idx) => (
+  <div
+    key={idx}
+    className={`message-container ${msg.sender}`}
+  >
+    {msg.sender === 'user' ? (
+      <div className={`message ${msg.sender}`}>
+        {msg.text}
+      </div>
+    ) : (
+      <div className="bot-response">
+        {msg.error ? (
+          <div className="error-text">{msg.text}</div>
+        ) : (
+          <ReactMarkdown>{msg.text}</ReactMarkdown>
+        )}
+      </div>
+    )}
+  </div>
+))}
+{isBotTyping && (
+      <div className="typing-indicator">
+        <div className="typing-text">
+          <span className={`typing-message ${isMessageFading ? 'fade-out' : ''}`}>
+            {typingMessage}
+          </span>
+          <div className="typing-dots">
+            <span>.</span>
+            <span>.</span>
+            <span>.</span>
           </div>
-        ))}
+        </div>
+      </div>
+    )}
       </>
     )
   )}
@@ -873,7 +1032,12 @@ const renderWelcomeContent = () => {
     <textarea
       ref={inputRef}
       value={input}
-      onChange={(e) => setInput(e.target.value)}
+      onChange={(e) => {
+        setInput(e.target.value);
+        if (isTempChat && !tempChatTyping && e.target.value.trim()) {
+          setTempChatTyping(true);
+        }
+      }}
       onKeyDown={handleKeyDown}
       placeholder={
         !currentConvId && !isTempChat
@@ -884,22 +1048,23 @@ const renderWelcomeContent = () => {
       }
       disabled={loadingConvId === currentConvId || (!currentConvId && !isTempChat)}
     />
-    <button
-  className="send-button"
-  onClick={sendMessage}
-  disabled={
-    !input.trim() ||
-    loadingConvId !== null ||
-    (!currentConvId && !isTempChat)
-  }
->
-  {loadingConvId ? (
-    <div className="spinner"></div>
-  ) : (
-    "➤"
-  )}
-</button>
-
+    {loadingConvId ? (
+     <button className="cancel-button" onClick={cancelResponse} title="Cancel response">
+     <img src="../src/assets/stop.png" alt="Cancel" className="cancel-icon" />
+   </button>
+    ) : (
+      <button
+        className="send-button"
+        onClick={sendMessage}
+        disabled={
+          !input.trim() ||
+          loadingConvId !== null ||
+          (!currentConvId && !isTempChat)
+        }
+      >
+        ➤
+      </button>
+    )}
   </div>
 </div>
 

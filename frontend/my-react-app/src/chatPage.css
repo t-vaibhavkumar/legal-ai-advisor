@@ -255,6 +255,27 @@ n
   color: #fff;
 }
 
+.temp-chat-reminder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 10px auto;
+  max-width: 600px;
+  border-left: 3px solid #ff9800;
+  border-right: 3px solid #ff9800;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.temp-chat-reminder-icon {
+  height: 20px;
+  width: auto;
+  margin-right: 10px;
+}
 .chat-input {
   position: fixed;
   bottom: 0;
@@ -535,33 +556,77 @@ n
 .typing-indicator {
   display: flex;
   align-items: center;
-  font-style: italic;
-  opacity: 0.7;
-  padding: 10px 16px;
+  padding: 12px 16px;
   background-color: #1a1a1a;
   border-radius: 8px;
   margin-bottom: 20px;
   color: #f0f0f0;
   border-left: 3px solid #007bff;
 }
-
-.dots {
+/* .typing-message {
   display: inline-block;
-  margin-left: 5px;
+  transition: opacity 0.5s ease-in-out;
+  animation: pulse 2s infinite;
+} */
+.typing-message {
+  display: inline-block;
+  transition: opacity 0.5s ease-in-out;
+  opacity: 1;
 }
 
-.dots span {
-  animation: blink 1.5s infinite;
+.typing-message.fade-out {
+  opacity: 0;
+}
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: #f0f0f0;
+  border-left: 3px solid #007bff;
+  transition: all 0.3s ease;
+}
+
+.typing-dots {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+}
+.typing-text {
+  display: flex;
+  align-items: center;
+}
+.typing-dots span {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin: 0 2px;
+  background-color: #f0f0f0;
+  animation: blink 1.5s infinite ease-in-out;
   opacity: 0;
 }
 
-.dots span:nth-child(1) {
+.typing-dots span:nth-child(1) {
   animation-delay: 0s;
 }
-.dots span:nth-child(2) {
+.typing-dots span:nth-child(2) {
   animation-delay: 0.2s;
 }
-.dots span:nth-child(3) {
+.typing-dots span:nth-child(3) {
   animation-delay: 0.4s;
 }
 
@@ -769,6 +834,30 @@ n
 
 .delete-confirm-delete:hover {
   background-color: #f44336;
+}
+.cancel-button {
+  background: #d32f2f;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.cancel-button:hover {
+  background-color: #f44336;
+}
+
+.cancel-icon {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
 }
 
 .message.bot .code-block {
