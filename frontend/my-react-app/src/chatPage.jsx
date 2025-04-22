@@ -128,27 +128,27 @@ useEffect(() => {
   fetchConversations();
 }, [user, isGuest, isFirstLoad]);
 
-  useEffect(() => {
-    if (isGuest && initialLoad) {
-      const newId = `guest-conv-${guestIdCounter}`;
-      const updatedCounter = guestIdCounter + 1;
-      setGuestIdCounter(updatedCounter);
-      
-      const newChat = {
-        id: newId,
-        title: "New Conversation",
-        createdAt: new Date(),
-        messages: [],
-        lastUpdated: new Date(),
-      };
-      
-      setGuestConversations([newChat]);
-      setConversations([newChat]);
-      setCurrentConvId(newId);
-      setInitialLoad(false);
-      setShowWelcomeScreen(true);
-    }
-  }, [isGuest, initialLoad, guestIdCounter]);
+useEffect(() => {
+  if (isGuest && initialLoad) {
+    const newId = `guest-conv-${guestIdCounter}`;
+    const updatedCounter = guestIdCounter + 1;
+    setGuestIdCounter(updatedCounter);
+    
+    const newChat = {
+      id: newId,
+      title: "New Conversation",
+      createdAt: new Date(),
+      messages: [],
+      lastUpdated: new Date(),
+    };
+    
+    setGuestConversations([newChat]);
+    setConversations([newChat]);  // This correctly sets the conversation
+    setCurrentConvId(newId);
+    setInitialLoad(false);
+    setShowWelcomeScreen(true);
+  }
+}, [isGuest, initialLoad, guestIdCounter]);
   
   useEffect(() => {
     setIsGuest(!user);
@@ -569,99 +569,99 @@ useEffect(() => {
     }
   };
 
-  const sendMessage = async () => {
-    if (!input.trim() || loadingConvId) return;
-    
-    if (currentConvId) {
-      setLoadingConvId(currentConvId);
+const sendMessage = async () => {
+  if (!input.trim() || loadingConvId) return;
+  
+  if (currentConvId) {
+    setLoadingConvId(currentConvId);
+  }
+  
+  setShowWelcomeScreen(false);
+  
+  const userInputWithLineBreaks = input.replace(/^\s*\n+|\n+\s*$/g, '');
+  
+  if (!userInputWithLineBreaks.trim()) {
+    setLoadingConvId(null);
+    setInput("");
+    return;
+  }
+  
+  const userMsg = {
+    sender: "user",
+    text: userInputWithLineBreaks,
+    timestamp: new Date().toISOString(),
+  };
+  const updatedMessages = [...messages, userMsg];
+  setMessages(updatedMessages);
+  setInput("");
+  
+  setIsFirstLoad(false);
+  
+  setIsBotTyping(true);
+  
+  try {
+    if (isTempChat) {
+      setTempChatMessages(updatedMessages);
     }
-    
-    setShowWelcomeScreen(false);
-    
-    const userInputWithLineBreaks = input.replace(/^\s*\n+|\n+\s*$/g, '');
-    
-    if (!userInputWithLineBreaks.trim()) {
-      setLoadingConvId(null);
-      setInput("");
-      return;
+    else if (isGuest) {
+      setGuestConversations(prev => 
+        prev.map(conv => 
+          conv.id === currentConvId 
+            ? { 
+                ...conv, 
+                messages: updatedMessages,
+                lastUpdated: new Date() 
+              } 
+            : conv
+        )
+      );
+    } else if (user) {
+      const convRef = doc(
+        db,
+        "chats",
+        user.uid,
+        "conversations",
+        currentConvId
+      );
+      await updateDoc(convRef, {
+        messages: updatedMessages,
+        lastUpdated: serverTimestamp(),
+      });
     }
+
+    const controller = new AbortController();
+    setAbortController(controller);
     
-    const userMsg = {
-      sender: "user",
-      text: userInputWithLineBreaks,
+    // const response = await fetch("http://127.0.0.1:5000/ask", {
+    const response = await fetch("https://a4f3-49-204-71-90.ngrok-free.app/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: userInputWithLineBreaks.trim(), 
+        conversationId: currentConvId,
+        isNewConversation: messages.length === 0,
+      }),
+      signal: controller.signal
+    });
+
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
+    const data = await response.json();
+    
+    setAbortController(null);
+    
+    setIsBotTyping(false);
+    
+    const botMsg = {
+      sender: "bot",
+      text: data.response,
       timestamp: new Date().toISOString(),
     };
-    const updatedMessages = [...messages, userMsg];
-    setMessages(updatedMessages);
-    setInput("");
+    const finalMessages = [...updatedMessages, botMsg];
+    setMessages(finalMessages);
     
-    setIsFirstLoad(false);
-    
-    setIsBotTyping(true);
-    
-    try {
-      if (isTempChat) {
-        setTempChatMessages(updatedMessages);
-      }
-      else if (isGuest) {
-        setGuestConversations(prev => 
-          prev.map(conv => 
-            conv.id === currentConvId 
-              ? { 
-                  ...conv, 
-                  messages: updatedMessages,
-                  lastUpdated: new Date() 
-                } 
-              : conv
-          )
-        );
-      } else if (user) {
-        const convRef = doc(
-          db,
-          "chats",
-          user.uid,
-          "conversations",
-          currentConvId
-        );
-        await updateDoc(convRef, {
-          messages: updatedMessages,
-          lastUpdated: serverTimestamp(),
-        });
-      }
-
-      const controller = new AbortController();
-      setAbortController(controller);
-      
-      // const response = await fetch("http://127.0.0.1:5000/ask", {
-      const response = await fetch("https://a4f3-49-204-71-90.ngrok-free.app/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: userInputWithLineBreaks.trim(), 
-          conversationId: currentConvId,
-          isNewConversation: messages.length === 0,
-        }),
-        signal: controller.signal
-      });
-
-      if (!response.ok) throw new Error(`API error: ${response.status}`);
-      const data = await response.json();
-      
-      setAbortController(null);
-      
-      setIsBotTyping(false);
-      
-      const botMsg = {
-        sender: "bot",
-        text: data.response,
-        timestamp: new Date().toISOString(),
-      };
-      const finalMessages = [...updatedMessages, botMsg];
-      setMessages(finalMessages);
-      
-      if (isTempChat) {
-        setTempChatMessages(finalMessages);
-      } else if (isGuest) {
+    if (isTempChat) {
+      setTempChatMessages(finalMessages);
+    } else if (isGuest) {
         setGuestConversations(prev => 
           prev.map(conv => 
             conv.id === currentConvId 
@@ -797,19 +797,19 @@ useEffect(() => {
     });
   }, [messages]);
 
-const renderWelcomeContent = () => {
-  if (showWelcomeScreen && !isTempChat) {
-    return (
-      <div className="welcome-message-container">
-        <div className="welcome-logo">⚖️</div>
-        <h1 className="welcome-title">Nomos Legal Assistant</h1>
-        <p className="welcome-tagline">Where legal jargon meets plain English - no objections!</p>
-        <p className="welcome-instruction">Ask me about any legal issue, and I'll help make sense of it.</p>
-        {isGuest && (
-          <p className="welcome-guest-notice">You're in guest mode. Your conversations won't be saved when you leave.</p>
-        )}
-      </div>
-    );
+  const renderWelcomeContent = () => {
+    if (showWelcomeScreen && !isTempChat) {
+      return (
+        <div className="welcome-message-container">
+          <div className="welcome-logo">⚖️</div>
+          <h1 className="welcome-title">Nomos Legal Assistant</h1>
+          <p className="welcome-tagline">Where legal jargon meets plain English - no objections!</p>
+          <p className="welcome-instruction">Ask me about any legal issue, and I'll help make sense of it.</p>
+          {isGuest && (
+            <p className="welcome-guest-notice">You're in guest mode. Your conversations won't be saved when you leave.</p>
+          )}
+        </div>
+      );
   } else if (isTempChat && tempChatMessages.length === 0) {
     return (
       <div className="welcome-message-container">
@@ -968,45 +968,59 @@ const renderWelcomeContent = () => {
             )}
           </div>
         ))}
+        {isBotTyping && (
+          <div className="typing-indicator">
+            <div className="typing-text">
+              <span className={`typing-message ${isMessageFading ? 'fade-out' : ''}`}>
+                {typingMessage}
+              </span>
+              <div className="typing-dots">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+              </div>
+            </div>
+          </div>
+        )}
       </>
     )
   ) : (
     currentConvId && messages.length > 0 && (
       <>
-{messages.map((msg, idx) => (
-  <div
-    key={idx}
-    className={`message-container ${msg.sender}`}
-  >
-    {msg.sender === 'user' ? (
-      <div className={`message ${msg.sender}`}>
-        {msg.text}
-      </div>
-    ) : (
-      <div className="bot-response">
-        {msg.error ? (
-          <div className="error-text">{msg.text}</div>
-        ) : (
-          <ReactMarkdown>{msg.text}</ReactMarkdown>
-        )}
-      </div>
-    )}
-  </div>
-))}
-{isBotTyping && (
-      <div className="typing-indicator">
-        <div className="typing-text">
-          <span className={`typing-message ${isMessageFading ? 'fade-out' : ''}`}>
-            {typingMessage}
-          </span>
-          <div className="typing-dots">
-            <span>.</span>
-            <span>.</span>
-            <span>.</span>
+        {messages.map((msg, idx) => (
+          <div
+            key={idx}
+            className={`message-container ${msg.sender}`}
+          >
+            {msg.sender === 'user' ? (
+              <div className={`message ${msg.sender}`}>
+                {msg.text}
+              </div>
+            ) : (
+              <div className="bot-response">
+                {msg.error ? (
+                  <div className="error-text">{msg.text}</div>
+                ) : (
+                  <ReactMarkdown>{msg.text}</ReactMarkdown>
+                )}
+              </div>
+            )}
           </div>
-        </div>
-      </div>
-    )}
+        ))}
+        {isBotTyping && (
+          <div className="typing-indicator">
+            <div className="typing-text">
+              <span className={`typing-message ${isMessageFading ? 'fade-out' : ''}`}>
+                {typingMessage}
+              </span>
+              <div className="typing-dots">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+              </div>
+            </div>
+          </div>
+        )}
       </>
     )
   )}
