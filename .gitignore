@@ -1,5 +1,6 @@
 # Ignore dataset files except legal_sources.json
 dataset/chroma_db/
+dataset/chroma_db.zip
 dataset/*.txt
 dataset/legal_terms.json
 
