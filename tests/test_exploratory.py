@@ -32,3 +32,5 @@ def test_usability():
     assert response.status_code == 200
     resp_text = response.json()["response"].lower()
     assert "maintenance" in resp_text and "custody" in resp_text
+
+

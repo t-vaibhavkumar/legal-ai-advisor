@@ -10,3 +10,4 @@ chunks = splitter.split_text(text)
 with open("legal_chunks.txt", "w", encoding="utf-8") as f:
     for chunk in chunks:
         f.write(chunk + "\n\n")
+print("completed chunk data")

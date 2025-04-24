@@ -1,8 +1,10 @@
-import requests # type: ignore
-from bs4 import BeautifulSoup # type: ignore
+import requests  # type: ignore
+from bs4 import BeautifulSoup  # type: ignore
 import json
 import time
 import re
+import fitz  # PyMuPDF
+import io
 
 # Load the JSON file with legal sources
 LEGAL_SOURCES_FILE = "legal_sources.json"
@@ -15,7 +17,25 @@ def clean_text(text):
     text = re.sub(r"\n{2,}", "\n", text)  # Remove excessive newlines
     return text.strip()
 
-# Function to scrape legal text from a given URL
+# Function to extract text from PDF URL
+def scrape_pdf_text(pdf_url):
+    """Download and extract text from a PDF file given its URL."""
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+        }
+        response = requests.get(pdf_url, headers=headers, timeout=15)
+        response.raise_for_status()
+
+        with fitz.open(stream=io.BytesIO(response.content), filetype="pdf") as doc:
+            text = "\n".join(page.get_text() for page in doc)
+            return clean_text(text) if text else None
+
+    except Exception as e:
+        print(f"❌ Error processing PDF {pdf_url}: {e}")
+        return None
+
+# Function to scrape legal text from an HTML page
 def scrape_law_text(url):
     """Scrapes the main legal content from the given URL."""
     try:
@@ -23,7 +43,7 @@ def scrape_law_text(url):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
         }
         response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()  # Raise error if request fails
+        response.raise_for_status()
         
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -65,7 +85,11 @@ for law in laws:
     url = law["url"]
 
     print(f"📜 Scraping: {law_name} ({url})")
-    law_text = scrape_law_text(url)  # Fetch text
+
+    if url.lower().endswith(".pdf"):
+        law_text = scrape_pdf_text(url)
+    else:
+        law_text = scrape_law_text(url)
 
     if law_text:
         legal_data[law_name] = law_text
@@ -73,7 +97,7 @@ for law in laws:
     else:
         print(f"⚠️ No data found for {law_name}, skipping...")
 
-    time.sleep(2)  # Avoid getting blocked by website
+    time.sleep(2)  # Avoid being rate-limited or blocked
 
 # Save scraped data to JSON
 save_json(legal_data)

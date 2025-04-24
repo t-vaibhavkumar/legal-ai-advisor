@@ -62,7 +62,7 @@ const WelcomePage = () => {
       </div>
 
       <div className="welcome-content">
-        <h1>Nomos 1.0</h1>
+        <h1>Nomos</h1>
         <p>
           Your legal AI chatbot for Indian law. Whether you want to understand
           your rights or just learn more, you’re in the right place.

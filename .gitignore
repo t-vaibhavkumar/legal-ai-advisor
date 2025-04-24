@@ -19,3 +19,7 @@ __pycache__/
 # Ignore logs and dependency files
 *.log
 
+test.py
+
+chroma_DB_V0.1/
+

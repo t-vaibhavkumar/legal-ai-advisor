@@ -30,3 +30,4 @@ def test_legal_entity_detection():
     response = requests.post(f"{BASE_URL}/ask", json=query)
     assert response.status_code == 200
     assert "rape" in response.json()["response"].lower()
+

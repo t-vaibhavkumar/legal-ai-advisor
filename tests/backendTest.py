@@ -16,7 +16,7 @@ test_backend_reachable()
 
 def test_ollama_response():
     ollama_url = "http://localhost:11434/api/generate"
-    data = {"model": "llama3.2", "prompt": "What is Python?", "stream": False}
+    data = {"model": "dolphin3", "prompt": "What is Python?", "stream": False}
 
     response = requests.post(ollama_url, json=data)
     assert response.status_code == 200, f"Expected 200, got {response.status_code}"
@@ -24,7 +24,7 @@ def test_ollama_response():
     json_response = response.json()
     assert "response" in json_response, "Missing 'response' key in Ollama output"
     
-    print("✅ Ollama server is working properly.")
+    print("✅ Dolphin server is working properly.")
 
 test_ollama_response()
 

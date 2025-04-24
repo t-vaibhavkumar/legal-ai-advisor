@@ -70,7 +70,7 @@ def ask_llm_with_context(query, conversation_id="default", is_new_conversation=F
     headers = {"Content-Type": "application/json"}
 
     try:
-        response = requests.post(url, data=json.dumps(payload), headers=headers, timeout=10)
+        response = requests.post(url, data=json.dumps(payload), headers=headers, timeout=100)
         response.raise_for_status()
 
         data = response.json()
