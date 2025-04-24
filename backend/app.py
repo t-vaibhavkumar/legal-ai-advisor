@@ -11,7 +11,16 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 # CORS(app, resources={r"/*": {"origins": "http://172.16.239.65:5173"}})
-CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+# CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+CORS(app, resources={
+    r"/*": {
+        "origins": [
+            "http://localhost:5173",
+            r"https://.*\.ngrok-free\.app"
+        ]
+    }
+})
+
 
 @app.route('/ask', methods=['POST'])
 def ask_question():

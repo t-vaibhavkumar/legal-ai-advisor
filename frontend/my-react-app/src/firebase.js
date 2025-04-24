@@ -1,9 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { APIKEY, AUTHDOMAIN, PROJECTID, STORAGEBUCKET, MESSAGINGSENDERID, APPID, MESUREMENTID } from "./const"; // ✅ Make sure these are correct imports
+import { APIKEY, AUTHDOMAIN, PROJECTID, STORAGEBUCKET, MESSAGINGSENDERID, APPID, MESUREMENTID } from "./const"; 
 
-// Firebase config
 const firebaseConfig = {
   apiKey: APIKEY,
   authDomain: AUTHDOMAIN,
@@ -18,9 +17,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Firebase services
-const auth = getAuth(app); // ✅ Auth service
-const db = getFirestore(app); // ✅ Firestore service
-const provider = new GoogleAuthProvider(); // ✅ Google Auth provider
+const auth = getAuth(app); 
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
 // Export the necessary services for usage
-export { auth, provider, signInWithPopup, signOut, db }; // ✅ Export all needed functions
+export { auth, provider, signInWithPopup, signOut, db }; 

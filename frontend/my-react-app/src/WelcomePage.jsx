@@ -70,9 +70,13 @@ const WelcomePage = () => {
 
         {!user && (
           <div className="button-group">
-            <button className="guest-btn" onClick={() => setStarted(true)}>
-              Start as Guest
-            </button>
+<button className="guest-btn" onClick={() => {
+  localStorage.removeItem("chat-user"); 
+  setUser(null); 
+  setStarted(true);
+}}>
+  Start as Guest
+</button>
 
             <button className="google-btn" onClick={signInWithGoogle}>
               <img
