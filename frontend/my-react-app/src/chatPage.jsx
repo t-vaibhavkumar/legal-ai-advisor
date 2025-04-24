@@ -632,8 +632,8 @@ const sendMessage = async () => {
     const controller = new AbortController();
     setAbortController(controller);
     
-    // const response = await fetch("http://127.0.0.1:5000/ask", {
-    const response = await fetch("https://a4f3-49-204-71-90.ngrok-free.app/ask", {
+    const response = await fetch("http://127.0.0.1:5000/ask", {
+    // const response = await fetch("https://a4f3-49-204-71-90.ngrok-free.app/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
