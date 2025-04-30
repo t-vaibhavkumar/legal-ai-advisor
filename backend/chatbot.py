@@ -5,8 +5,19 @@ import os
 import sys
 import json
 
+prod_ollama_url = "http://host.docker.internal:11434"
+local_host_url = "http://localhost:11434"
+url = "/api/generate"
+
+isProd = os.getenv("ISPROD", "False").lower() == "true"
+# ollamaURL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from dataset.vector_database import search_documents
+if isProd:
+    from vector_database import search_documents
+    url = prod_ollama_url + url
+else:
+    from dataset.vector_database import search_documents
+    url = local_host_url + url
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -59,7 +70,6 @@ def ask_llm_with_context(query, conversation_id="default", is_new_conversation=F
 
     logger.debug(f"Sending prompt with conversation history for ID: {conversation_id}")
     
-    url = "http://localhost:11434/api/generate"
 
     payload = {
         "model": "llama3.2",  

@@ -15,6 +15,8 @@ import {
 import { db } from "./firebase";
 import "./chatPage.css";
 
+const isProd = false;
+
 const ChatPage = ({ user }) => {
   const [conversations, setConversations] = useState([]);
   const [currentConvId, setCurrentConvId] = useState(null);
@@ -631,8 +633,17 @@ const sendMessage = async () => {
 
     const controller = new AbortController();
     setAbortController(controller);
+
+    let url;
+
+    if (isProd){
+      url = "http://backend:5000/ask"
+    }
+    else{
+      url = "http://127.0.0.1:5000/ask"
+    }
     
-    const response = await fetch("http://127.0.0.1:5000/ask", {
+    const response = await fetch(url, {
     // const response = await fetch("https://a4f3-49-204-71-90.ngrok-free.app/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -2,7 +2,13 @@ import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from chatbot import ask_llm_with_context  # Updated import
-from dataset.vector_database import search_documents
+import os
+
+isProd = os.getenv("ISPROD", "False").lower() == "true"
+if isProd:
+    from vector_database import search_documents
+else:
+    from dataset.vector_database import search_documents
 
 # Configure Logging
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")

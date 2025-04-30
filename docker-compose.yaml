@@ -1,0 +1,41 @@
+# the legal-ai-network is not yet functional
+# the containers dont use the legal-ai-network
+
+#######################
+## docker-compose up ##
+#######################
+
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend/my-react-app  # Path to your frontend project
+    container_name: frontend
+    environment:
+      - REACT_APP_ISPROD=true  # Define your environment variables here
+    # env_file:
+    #  - ./frontend/.env  # Mount your frontend .env file here
+    ports:
+      - "5173:5173"  # Map port for frontend (adjust if using different port)
+    networks:
+      - legal-ai-network
+    depends_on:
+      - backend  # Ensure backend is available before starting frontend
+
+  backend:
+    build: ./backend  # Path to your backend project
+    container_name: backend
+    environment:
+      - ISPROD=true  # Example environment variable for backend
+    #env_file:
+    #  - ./backend/.env  # Mount your backend .env file here
+    ports:
+      - "5000:5000"  # Map port for backend (adjust if needed)
+    networks:
+      - legal-ai-network
+    volumes:
+      - ./dataset/chroma_db:/legal-ai-advisor/dataset/chroma_db 
+
+networks:
+  legal-ai-network:
+    driver: bridge
