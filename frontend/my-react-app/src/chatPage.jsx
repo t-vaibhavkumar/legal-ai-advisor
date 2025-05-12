@@ -825,7 +825,7 @@ const sendMessage = async () => {
     return (
       <div className="welcome-message-container">
 <div className="welcome-logo">
-  <img src="../src/assets/Temp.png" alt="Temporary Chat" className="temp-chat-logo" />
+  <img src="/Temp.png" alt="Temporary Chat" className="temp-chat-logo" />
 </div>
         <h1 className="welcome-title">Temporary Chat</h1>
         <p className="welcome-tagline">Quick conversations without the commitment</p>
@@ -865,7 +865,7 @@ const sendMessage = async () => {
             title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <img
-              src="../src/assets/sidemenu.png"
+              src="/sidemenu.png"
               alt="Toggle sidebar"
               className="sidebar-icon"
             />
@@ -878,7 +878,7 @@ const sendMessage = async () => {
         </button>
         {user && !isGuest && (
           <button className="temp-chat" onClick={startTemporaryChat}>
-  <img src="../src/assets/Temporary.png" alt="Temporary Chat" className={sidebarCollapsed ? "temp-chat-icon-collapsed" : "temp-chat-icon"} />
+  <img src="/Temporary.png" alt="Temporary Chat" className={sidebarCollapsed ? "temp-chat-icon-collapsed" : "temp-chat-icon"} />
   <span className="temp-chat-text">Temporary Chat</span>
 </button>
 )}
@@ -948,7 +948,7 @@ const sendMessage = async () => {
 >
   {isTempChat && tempChatMessages.length > 0 && (
     <div className="temp-chat-reminder">
-      <img src="../src/assets/Temp.png" alt="Temp" className="temp-chat-reminder-icon" />
+      <img src="/Temp.png" alt="Temp" className="temp-chat-reminder-icon" />
       <span>Temporary Chat - Conversations won't be saved once you leave the chat</span>
     </div>
   )}
@@ -1062,7 +1062,7 @@ const sendMessage = async () => {
     />
     {loadingConvId ? (
      <button className="cancel-button" onClick={cancelResponse} title="Cancel response">
-     <img src="../src/assets/stop.png" alt="Cancel" className="cancel-icon" />
+     <img src="/stop.png" alt="Cancel" className="cancel-icon" />
    </button>
     ) : (
       <button
