@@ -35,6 +35,11 @@
     overflow: hidden;
     background-color: #000;
   }
+  .logoimg{
+    max-height: 45px;
+    max-width: auto;
+    padding-right: 3px;
+  }
   
   .orb-bg {
     position: absolute;
