@@ -62,7 +62,7 @@ const WelcomePage = () => {
       </div>
 
       <div className="welcome-content">
-        <h1><img className="logoimg" src="../public/NomosLogo.png"/>omos</h1>
+        <h1><img className="logoimg" src="/NomosLogo.png"/>omos</h1>
         <p>
           Your legal AI chatbot for Indian law. Whether you want to understand
           your rights or just learn more, you’re in the right place.
