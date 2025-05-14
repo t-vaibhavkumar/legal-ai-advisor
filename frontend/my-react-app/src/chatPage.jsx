@@ -640,11 +640,12 @@ const sendMessage = async () => {
       url = "http://backend:5000/ask"
     }
     else{
-      url = "http://127.0.0.1:5000/ask"
+      // url = "http://127.0.0.1:5000/ask"
+      url = "https://2387-49-204-71-90.ngrok-free.app/ask"
     }
     
-    const response = await fetch(url, {
-    // const response = await fetch("https://a4f3-49-204-71-90.ngrok-free.app/ask", {
+    // const response = await fetch(url, {
+    const response = await fetch("https://f7ef-103-105-227-34.ngrok-free.app/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

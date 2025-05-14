@@ -22,10 +22,23 @@ CORS(app, resources={
     r"/*": {
         "origins": [
             "http://localhost:5173",
-            r"https://.*\.ngrok-free\.app"
+            r"https://\.*\.ngrok-free\.app",
+            "https://legal-ai-advisor-mu.vercel.app"
         ]
     }
 })
+
+# def custom_origin(origin):
+#     return (
+#         origin == "http://localhost:5173" or
+#         origin.endswith(".ngrok-free.app")
+#     )
+
+# CORS(app, origins=custom_origin)
+
+# CORS(app, origins=["http://localhost:5173"]) 
+# CORS(app, origins=["http://localhost:5173"], supports_credentials=True, methods=["GET", "POST", "OPTIONS"], allow_headers=["Content-Type"])
+
 
 
 @app.route('/ask', methods=['POST'])
