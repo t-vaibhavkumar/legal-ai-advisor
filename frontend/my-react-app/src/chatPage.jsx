@@ -645,7 +645,7 @@ const sendMessage = async () => {
     }
     
     // const response = await fetch(url, {
-    const response = await fetch("https://f7ef-103-105-227-34.ngrok-free.app/ask", {
+    const response = await fetch("https://8507-49-204-71-90.ngrok-free.app/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
